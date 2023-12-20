@@ -25,4 +25,4 @@ def signup_meet_highschool_conference_save(request):
 @login_required
 def athlete(request):
     if request.method == "GET":
-        return render(request, "athletes.html", {"form": AthleteForm(), "athletes": Athlete.objects.filter(id=1)})
+        return render(request, "athletes.html", {"form": AthleteForm(), "athletes": Athlete.objects.filter()})

@@ -41,23 +41,35 @@
         <tbody>
           {% for athlete in athletes %}
           <tr>
-            <td>{{ athlete }}</td>
+            <td>{{ athlete.first_name }}</td>
+            <td>{{ athlete.last_name }}</td>
+            <td>{{ athlete.high_school_class_of }}</td>
           </tr>
           {% endfor %}
-          <tr>
-          {% for field in form.visible_fields %}
-          <td>
-            {{ field.errors }}
-            {{ field }}
-            {{ field.help_text }}
-          </td>
-          {% endfor %}
-        </tr>
+          <template>
+            <tr>
+            {% for field in form.visible_fields %}
+            <td>
+              {{ field.errors }}
+              {{ field }}
+              {{ field.help_text }}
+            </td>
+            {% endfor %}
+            </tr>
+          </template>
         </tbody>
       </table>
     </fieldset>
 
-    <button>add athlete</button>
+    <button onclick="addRow()">Add Athlete</button>
+
+    <script>
+      function addRow() {
+        let temp = document.getElementsByTagName("template")[0];
+        let clone = temp.content.cloneNode(true);
+        document.getElementsByTagName("tbody")[0].appendChild(clone);
+      }
+    </script>
 
     <input type="submit" value="Save">
   </form>
