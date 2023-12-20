@@ -40,7 +40,7 @@ class MeetAdmin(BaseAdmin):
 
 @admin.register(Athlete)
 class AthleteAdmin(BaseAdmin):
-    list_display = ("__str__", "teams")
+    list_display = ("id", "__str__", "teams")
     search_fields = ("first_name", "last_name")
 
     def get_queryset(self, request):
@@ -54,29 +54,29 @@ class AthleteAdmin(BaseAdmin):
 
 @admin.register(LeagueTeamEntry)
 class LeagueTeamRegistryAdmin(BaseAdmin):
-    list_display = ("pk", utils.linkify("league"), utils.linkify("team"))
+    list_display = ("id", utils.linkify("league"), utils.linkify("team"))
 
 
 @admin.register(MeetTeamEntry)
 class MeetTeamRegistryAdmin(BaseAdmin):
-    list_display = ("pk", utils.linkify("meet"), utils.linkify("team"))
+    list_display = ("id", utils.linkify("meet"), utils.linkify("team"))
 
 
 @admin.register(TeamAthleteEntry)
 class TeamAthleteRegistryAdmin(BaseAdmin):
-    list_display = ("pk", utils.linkify("team"), utils.linkify("athlete"))
+    list_display = ("id", utils.linkify("team"), utils.linkify("athlete"))
 
 
 @admin.register(MeetAthleteIndividualEntry)
 class MeetAthleteIndividualRegistryAdmin(BaseAdmin):
-    list_display = ("pk", utils.linkify("meet"), utils.linkify("athlete"), "event", "seed")
+    list_display = ("id", utils.linkify("meet"), utils.linkify("athlete"), "event", "seed")
 
 
 @admin.register(MeetAthleteRelayEntry)
 class MeetAthleteRelayRegistryAdmin(BaseAdmin):
-    list_display = ("pk", utils.linkify("meet"), utils.linkify("athlete_1"), utils.linkify("athlete_2"), utils.linkify("athlete_3"), utils.linkify("athlete_4"), "event", "seed")
+    list_display = ("id", utils.linkify("meet"), utils.linkify("athlete_1"), utils.linkify("athlete_2"), utils.linkify("athlete_3"), utils.linkify("athlete_4"), "event", "seed")
 
 
 @admin.register(CoachEntry)
 class CoachRegistryAdmin(BaseAdmin):
-    list_display = ("pk", utils.linkify("team"), utils.linkify("profile"))
+    list_display = ("id", utils.linkify("team"), utils.linkify("profile"))
