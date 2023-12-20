@@ -1,6 +1,12 @@
 from django.forms import ModelForm
-from registration.models import MeetAthleteRelayEntry, MeetAthleteIndividualEntry
+from registration.models import MeetAthleteRelayEntry, MeetAthleteIndividualEntry, Athlete
 from django.forms.widgets import TextInput
+
+
+class AthleteForm(ModelForm):
+    class Meta:
+        model = Athlete
+        fields = "__all__"
 
 
 class MeetAthleteIndividualEntryForm(ModelForm):

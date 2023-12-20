@@ -34,7 +34,7 @@ class MeetAdmin(BaseAdmin):
         if request.user.is_superuser:
             return qs
         teams_ids = CoachEntry.objects.filter(profile=request.user).values_list("team_id", flat=True)
-        meet_ids = MeetTeamEntry.objects.filter(id__in=teams_ids).values_list("meet_id", flat=True)
+        meet_ids = MeetTeamEntry.objects.filter(team_id__in=teams_ids).values_list("meet_id", flat=True)
         return qs.filter(id__in=meet_ids)
 
 
@@ -48,7 +48,7 @@ class AthleteAdmin(BaseAdmin):
         if request.user.is_superuser:
             return qs
         teams_ids = CoachEntry.objects.filter(profile=request.user).values_list("team_id", flat=True)
-        athlete_ids = TeamAthleteEntry.objects.filter(id__in=teams_ids).values_list("athlete_id", flat=True)
+        athlete_ids = TeamAthleteEntry.objects.filter(team_id__in=teams_ids).values_list("athlete_id", flat=True)
         return qs.filter(id__in=athlete_ids)
 
 

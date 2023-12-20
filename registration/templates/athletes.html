@@ -19,25 +19,32 @@
 
   <!-- Scripts -->
   {% load static %}
-  <script src="{% static 'registration/conference.js' %}"></script>
+  <script src="{% static 'registration/athlete.js' %}"></script>
 
   <!-- Site Title -->
   <title>Zibing Zhang</title>
 </head>
 
 <body>
-  {% url logout_named_view %}
   <form id="myForm" action="" method="post">
     {% csrf_token %}
     {{ form.non_field_errors }}
     <fieldset>
       <table border="1">
-        <tr>
+        <thead>
+          <tr>
           {% for field in form.visible_fields %}
           <th>{{ field.label_tag }}</th>
           {% endfor %}
         </tr>
-        <tr>
+        </thead>
+        <tbody>
+          {% for athlete in athletes %}
+          <tr>
+            <td>{{ athlete }}</td>
+          </tr>
+          {% endfor %}
+          <tr>
           {% for field in form.visible_fields %}
           <td>
             {{ field.errors }}
@@ -46,17 +53,11 @@
           </td>
           {% endfor %}
         </tr>
-        <tr>
-          {% for field in form.visible_fields %}
-          <td>
-            {{ field.errors }}
-            {{ field }}
-            {{ field.help_text }}
-          </td>
-          {% endfor %}
-        </tr>
+        </tbody>
       </table>
     </fieldset>
+
+    <button>add athlete</button>
 
     <input type="submit" value="Save">
   </form>
