@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from common.models import BaseModel
+from common.models import BaseModel, Event
 from accounts.models import Profile
 
 
@@ -90,20 +90,6 @@ class TeamAthleteEntry(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.team} - {self.athlete}"
-
-
-class Event(models.TextChoices):
-    _200_YARD_MEDLEY_RELAY = "200 Yard Medley Relay"
-    _200_YARD_FREESTYLE_RELAY = "200 Yard Freestyle Relay"
-    _400_YARD_FREESTYLE_RELAY = "400 Yard Freestyle Relay"
-    _200_YARD_INDIVIDUAL_MEDLEY = "200 Yard Individual Medley"
-    _100_YARD_BUTTERFLY = "100 Yard Butterfly"
-    _100_YARD_BACKSTROKE = "100 Yard Backstroke"
-    _100_YARD_BREASTSTROKE = "100 Yard Breaststroke"
-    _50_YARD_FREESTYLE = "50 Yard Freestyle"
-    _100_YARD_FREESTYLE = "100 Yard Freestyle"
-    _200_YARD_FREESTYLE = "200 Yard Freestyle"
-    _500_YARD_FREESTYLE = "500 Yard Freestyle"
 
 
 class MeetAthleteIndividualEntry(BaseModel):

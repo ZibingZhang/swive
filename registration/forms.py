@@ -16,6 +16,7 @@ class MeetAthleteIndividualEntryForm(ModelForm):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.fields["athlete"].required = False
         self.fields["seed"].widget = TextInput()
 
 

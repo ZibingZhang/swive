@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from registration.models import Athlete
+from common.models import INDIVIDUAL_EVENTS
 from registration.forms import MeetAthleteRelayEntryForm, MeetAthleteIndividualEntryForm, AthleteForm
 
 
@@ -12,7 +13,15 @@ def index(request):
 @login_required
 def signup_meet_highschool_conference(request):
     if request.method == "GET":
-        return render(request, "conference.html", {"form": MeetAthleteIndividualEntryForm()})
+        sections = []
+        for event in INDIVIDUAL_EVENTS:
+            sections.append({
+                "event": event.label,
+                "forms": [
+                    MeetAthleteIndividualEntryForm(prefix=f"{event}_{i}_") for i in range(4)
+                ]
+            })
+        return render(request, "conference.html", {"sections": sections})
 
 
 @login_required

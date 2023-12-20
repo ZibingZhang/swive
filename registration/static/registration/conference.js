@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function handleForm(event) {
     event.preventDefault();
     var data = new FormData(form);
-    fetch(window.location.origin + '/registration/signup/meet/highschool/conference/save', {
+    fetch(window.location.origin + '/registration/conference/save/', {
       method: 'POST',
         body: new FormData(event.target),
       }).then(function (response) {

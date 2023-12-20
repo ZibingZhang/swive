@@ -29,35 +29,32 @@
   <form id="myForm" action="" method="post">
     {% csrf_token %}
     {{ form.non_field_errors }}
-    <fieldset>
-      <h2>200 Yard Freestyle</h2>
-      <table border="1">
-        <tr>
-          {% for field in form.visible_fields %}
-          <th>{{ field.label_tag }}</th>
-          {% endfor %}
-        </tr>
-        <tr>
-          {% for field in form.visible_fields %}
-          <td>
-            {{ field.errors }}
-            {{ field }}
-            {{ field.help_text }}
-          </td>
-          {% endfor %}
-        </tr>
-        <tr>
-          {% for field in form.visible_fields %}
-          <td>
-            {{ field.errors }}
-            {{ field }}
-            {{ field.help_text }}
-          </td>
-          {% endfor %}
-        </tr>
-      </table>
-    </fieldset>
 
+    {% for section in sections %}
+      <fieldset>
+        <h2>{{ section.event }}</h2>
+        <table border="1">
+          <thead>
+            <tr>
+              {% for field in section.forms.0.visible_fields %}
+                <th>{{ field.label_tag }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for form in section.forms %}
+              <tr>
+                {% for field in form.visible_fields %}
+                  <td>
+                    {{ field }}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </fieldset>
+    {% endfor %}
     <input type="submit" value="Save">
   </form>
 </body>
