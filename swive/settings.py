@@ -140,4 +140,3 @@ AUTH_USER_MODEL = "accounts.Profile"
 
 
 # django-import-export settings
-IMPORT_EXPORT_TMP_STORAGE_CLASS = import_export.tmp_storages.BaseStorage

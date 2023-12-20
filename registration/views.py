@@ -11,7 +11,7 @@ def index(request):
 
 
 @login_required
-def signup_meet_highschool_conference(request):
+def meet_entry(request, meet_id, team_id):
     if request.method == "GET":
         sections = []
         for event in INDIVIDUAL_EVENTS:
