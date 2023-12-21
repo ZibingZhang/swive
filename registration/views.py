@@ -11,7 +11,7 @@ def index(request):
 
 
 @login_required
-def meet_entry(request, meet_id, team_id):
+def meet_entry_form(request, meet_id, team_id):
     if request.method == "GET":
         sections = []
         for event in INDIVIDUAL_EVENTS:
@@ -25,7 +25,7 @@ def meet_entry(request, meet_id, team_id):
 
 
 @login_required
-def signup_meet_highschool_conference_save(request):
+def save_meet_entry_form(request, meet_id, team_id):
     if request.method == "POST":
         print(request._post)
         return HttpResponse(200)
