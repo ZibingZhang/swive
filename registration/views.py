@@ -18,10 +18,10 @@ def meet_entry_form(request, meet_id, team_id):
             sections.append({
                 "event": event.label,
                 "forms": [
-                    MeetAthleteIndividualEntryForm(prefix=f"{event}_{i}_") for i in range(4)
+                    MeetAthleteIndividualEntryForm(team_id, prefix=f"{event}_{i}_") for i in range(4)
                 ]
             })
-        return render(request, "conference.html", {"sections": sections})
+        return render(request, "meet_entry.html", {"sections": sections})
 
 
 @login_required
