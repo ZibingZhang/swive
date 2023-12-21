@@ -3,7 +3,7 @@ from django.utils.html import format_html
 
 
 # https://stackoverflow.com/a/53092940
-def linkify(field_name):
+def linkify_fk(field_name):
     """
     Converts a foreign key value into clickable links.
 

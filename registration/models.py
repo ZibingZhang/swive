@@ -74,6 +74,10 @@ class MeetTeamEntry(BaseModel):
     def __str__(self) -> str:
         return f"{self.meet} - {self.team}"
 
+    @property
+    def edit(self) -> str:
+        return "Edit meet entries"
+
 
 class MeetAthleteIndividualEntry(BaseModel):
     class Meta(BaseModel.Meta):
