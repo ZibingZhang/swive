@@ -28,6 +28,7 @@ class Team(BaseModel):
 
 
 class Meet(BaseModel):
+    league = models.ForeignKey(League, on_delete=models.CASCADE)
     start_date = models.DateField("start date")
     end_date = models.DateField("end date")
     name = models.CharField(max_length=100)
@@ -43,14 +44,8 @@ class Meet(BaseModel):
 class Athlete(BaseModel):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
     high_school_class_of = models.IntegerField(default=None, blank=True, null=True)
-
-    @property
-    def teams(self) -> str:
-        team_ids = TeamAthleteEntry.objects.filter(athlete=self).values_list("team_id", flat=True)
-        return " | ".join(
-            team.name for team in Team.objects.filter(id__in=team_ids)
-        )
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"
@@ -78,18 +73,6 @@ class MeetTeamEntry(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.meet} - {self.team}"
-
-
-class TeamAthleteEntry(BaseModel):
-    class Meta(BaseModel.Meta):
-        verbose_name = "Athlete Entry"
-        verbose_name_plural = "Team Athlete Registry"
-
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE)
-
-    def __str__(self) -> str:
-        return f"{self.team} - {self.athlete}"
 
 
 class MeetAthleteIndividualEntry(BaseModel):
