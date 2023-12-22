@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "swive"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    {name = "Zibing Zhang", email = "contact@zibingzhang.com"}
+]
+dependencies = [
+    "django-import-export>=3.3.4",
+    "Django>=5.0"
+]
+dynamic = [
+    "version"
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.12",
+    "flake8>=6.1",
+    "isort>=5.13",
+    "pyproject-flake8>=5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ZibingZhang/swive"
+
+[tool.setuptools]
+py-modules = [
+    "accounts",
+    "common",
+    "registration",
+    "swive",
+]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = "E203"
+
+[tool.isort]
+profile = "black"
