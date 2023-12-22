@@ -53,7 +53,7 @@ class Athlete(BaseModel):
 
 class LeagueTeamEntry(BaseModel):
     class Meta(BaseModel.Meta):
-        verbose_name = "Team Entry"
+        verbose_name = "League Team Entry"
         verbose_name_plural = "League Team Registry"
 
     league = models.ForeignKey(League, on_delete=models.CASCADE)
@@ -65,7 +65,7 @@ class LeagueTeamEntry(BaseModel):
 
 class MeetTeamEntry(BaseModel):
     class Meta(BaseModel.Meta):
-        verbose_name = "Team Entry"
+        verbose_name = "Meet Team Entry"
         verbose_name_plural = "Meet Team Registry"
 
     meet = models.ForeignKey(Meet, on_delete=models.CASCADE)

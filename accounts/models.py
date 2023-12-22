@@ -7,4 +7,4 @@ class Profile(AbstractUser):
         verbose_name_plural = "Profiles"
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name} ({self.username})"
