@@ -9,6 +9,9 @@ __pycache__/
 # PEP 582
 __pypackages__/
 
+# Build
+build/
+
 # Environments
 venv/
 
