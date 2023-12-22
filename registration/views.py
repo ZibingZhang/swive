@@ -5,10 +5,10 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from registration.models import Athlete, Meet
-from common.constants import INDIVIDUAL_EVENTS, EVENT_ORDER
+from common.constants import INDIVIDUAL_EVENTS, EVENT_ORDER, RELAY_EVENTS
 from django.views.decorators.http import require_http_methods
 from registration.forms import MeetAthleteRelayEntryForm, MeetAthleteIndividualEntryForm, AthleteForm
-from registration.models import MeetAthleteIndividualEntry
+from registration.models import MeetAthleteIndividualEntry, MeetAthleteRelayEntry
 
 
 @login_required
@@ -21,10 +21,15 @@ def manage_athletes(request):
 @require_http_methods(["GET"])
 def meet_entry_form(request, meet_id, team_id):
     sections = []
-    entries = MeetAthleteIndividualEntry.objects.filter(meet_id=meet_id, athlete__team_id=team_id)
+    individual_entries = MeetAthleteIndividualEntry.objects.filter(meet_id=meet_id, athlete__team_id=team_id)
+    relay_entries = MeetAthleteRelayEntry.objects.filter(meet_id=meet_id, athlete_1__team_id=team_id)
     entries_by_event = defaultdict(lambda: [])
-    for entry in entries:
+
+    for entry in individual_entries:
         entries_by_event[entry.event].append(entry)
+    for entry in relay_entries:
+        entries_by_event[entry.event].append(entry)
+
     for event in EVENT_ORDER:
         if event in INDIVIDUAL_EVENTS:
             forms = []
@@ -37,6 +42,19 @@ def meet_entry_form(request, meet_id, team_id):
                 "event": event.value,
                 "forms": forms
             })
+        elif event in RELAY_EVENTS:
+            forms = []
+            for i in range(4):
+                try:
+                    forms.append(MeetAthleteRelayEntryForm(team_id, prefix=f"{event.as_prefix()}-{i}", initial={
+                        "athlete_1": entries_by_event[event][i].athlete_1_id, "seed": entries_by_event[event][i].seed}))
+                except IndexError:
+                    forms.append(MeetAthleteRelayEntryForm(team_id, prefix=f"{event.as_prefix()}-{i}"))
+            sections.append({
+                "event": event.value,
+                "forms": forms
+            })
+
     return render(request, "meet_entry.html", {"sections": sections})
 
 
