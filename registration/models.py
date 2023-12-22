@@ -1,7 +1,8 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from common.models import BaseModel, EventChoice
+
 from accounts.models import Profile
+from common.models import BaseModel, EventChoice
 
 
 class League(BaseModel):

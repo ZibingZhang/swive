@@ -1,1 +1,2 @@
 -r common.txt
+isort==5.13.2

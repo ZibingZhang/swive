@@ -1,14 +1,16 @@
 from collections import defaultdict
 from decimal import Decimal
 
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from registration.models import Athlete, Meet
-from common.constants import INDIVIDUAL_EVENTS, EVENT_ORDER, RELAY_EVENTS
 from django.views.decorators.http import require_http_methods
-from registration.forms import MeetAthleteRelayEntryForm, MeetAthleteIndividualEntryForm, AthleteForm
-from registration.models import MeetAthleteIndividualEntry, MeetAthleteRelayEntry
+
+from common.constants import EVENT_ORDER, INDIVIDUAL_EVENTS, RELAY_EVENTS
+from registration.forms import (AthleteForm, MeetAthleteIndividualEntryForm,
+                                MeetAthleteRelayEntryForm)
+from registration.models import (Athlete, MeetAthleteIndividualEntry,
+                                 MeetAthleteRelayEntry)
 
 
 @login_required

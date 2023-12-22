@@ -1,8 +1,11 @@
 from django.contrib import admin
+from django.utils.html import format_html
+
 from common import utils
 from common.admin import BaseAdmin
-from registration.models import Meet, Team, Athlete, CoachEntry, LeagueTeamEntry, League, MeetTeamEntry, MeetAthleteIndividualEntry, MeetAthleteRelayEntry
-from django.utils.html import format_html
+from registration.models import (Athlete, CoachEntry, League, LeagueTeamEntry,
+                                 Meet, MeetAthleteIndividualEntry,
+                                 MeetAthleteRelayEntry, MeetTeamEntry, Team)
 
 
 @admin.register(League)

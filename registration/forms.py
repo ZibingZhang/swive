@@ -1,6 +1,8 @@
-from django.forms import ModelForm, ChoiceField
-from registration.models import MeetAthleteRelayEntry, MeetAthleteIndividualEntry, Athlete
+from django.forms import ModelForm
 from django.forms.widgets import TextInput
+
+from registration.models import (Athlete, MeetAthleteIndividualEntry,
+                                 MeetAthleteRelayEntry)
 
 
 class AthleteForm(ModelForm):
