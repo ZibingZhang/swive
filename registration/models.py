@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from common.models import BaseModel, Event
+from common.models import BaseModel, EventChoice
 from accounts.models import Profile
 
 
@@ -86,7 +86,7 @@ class MeetAthleteIndividualEntry(BaseModel):
 
     meet = models.ForeignKey(Meet, on_delete=models.CASCADE)
     athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE)
-    event = models.CharField(max_length=30, choices=Event.choices)
+    event = models.CharField(max_length=30, choices=EventChoice.choices)
     seed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
 
     def __str__(self) -> str:
@@ -103,7 +103,7 @@ class MeetAthleteRelayEntry(BaseModel):
     athlete_2 = models.ForeignKey(Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set2")
     athlete_3 = models.ForeignKey(Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set3")
     athlete_4 = models.ForeignKey(Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set4")
-    event = models.CharField(max_length=30, choices=Event.choices)
+    event = models.CharField(max_length=30, choices=EventChoice.choices)
     seed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
 
     @property
