@@ -13,8 +13,8 @@ class League(BaseModel):
 
 
 class Gender(models.TextChoices):
-    FEMALE = 'F', "Female"
-    MALE = 'M', "Male"
+    FEMALE = "F", "Female"
+    MALE = "M", "Male"
 
     def __str__(self) -> str:
         return self.label
@@ -22,7 +22,9 @@ class Gender(models.TextChoices):
 
 class Team(BaseModel):
     name = models.CharField(max_length=50)
-    gender = models.CharField(max_length=1, choices=Gender.choices, blank=True, null=True)
+    gender = models.CharField(
+        max_length=1, choices=Gender.choices, blank=True, null=True
+    )
 
     def __str__(self) -> str:
         return self.name
@@ -100,10 +102,18 @@ class MeetAthleteRelayEntry(BaseModel):
         verbose_name_plural = "Meet Relay Event Registry"
 
     meet = models.ForeignKey(Meet, on_delete=models.CASCADE)
-    athlete_1 = models.ForeignKey(Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set1")
-    athlete_2 = models.ForeignKey(Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set2")
-    athlete_3 = models.ForeignKey(Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set3")
-    athlete_4 = models.ForeignKey(Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set4")
+    athlete_1 = models.ForeignKey(
+        Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set1"
+    )
+    athlete_2 = models.ForeignKey(
+        Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set2"
+    )
+    athlete_3 = models.ForeignKey(
+        Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set3"
+    )
+    athlete_4 = models.ForeignKey(
+        Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set4"
+    )
     event = models.CharField(max_length=30, choices=EventChoice.choices)
     seed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
 

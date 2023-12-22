@@ -1,8 +1,11 @@
 from django.forms import ModelForm
 from django.forms.widgets import TextInput
 
-from registration.models import (Athlete, MeetAthleteIndividualEntry,
-                                 MeetAthleteRelayEntry)
+from registration.models import (
+    Athlete,
+    MeetAthleteIndividualEntry,
+    MeetAthleteRelayEntry,
+)
 
 
 class AthleteForm(ModelForm):
@@ -27,7 +30,7 @@ class MeetAthleteIndividualEntryForm(ModelForm):
     def _filter_athlete_choices(field, team_id):
         field.choices = filter(
             lambda choice: choice[0] == "" or choice[0].instance.team_id == team_id,
-            field.choices
+            field.choices,
         )
 
 
@@ -50,5 +53,5 @@ class MeetAthleteRelayEntryForm(ModelForm):
     def _filter_athlete_choices(field, team_id):
         field.choices = filter(
             lambda choice: choice[0] == "" or choice[0].instance.team_id == team_id,
-            field.choices
+            field.choices,
         )

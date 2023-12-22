@@ -7,24 +7,38 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from common.constants import EVENT_ORDER, INDIVIDUAL_EVENTS, RELAY_EVENTS
-from registration.forms import (AthleteForm, MeetAthleteIndividualEntryForm,
-                                MeetAthleteRelayEntryForm)
-from registration.models import (Athlete, MeetAthleteIndividualEntry,
-                                 MeetAthleteRelayEntry)
+from registration.forms import (
+    AthleteForm,
+    MeetAthleteIndividualEntryForm,
+    MeetAthleteRelayEntryForm,
+)
+from registration.models import (
+    Athlete,
+    MeetAthleteIndividualEntry,
+    MeetAthleteRelayEntry,
+)
 
 
 @login_required
 @require_http_methods(["GET"])
 def manage_athletes(request):
-    return render(request, "athletes.html", {"form": AthleteForm(), "athletes": Athlete.objects.filter()})
+    return render(
+        request,
+        "athletes.html",
+        {"form": AthleteForm(), "athletes": Athlete.objects.filter()},
+    )
 
 
 @login_required
 @require_http_methods(["GET"])
 def meet_entry_form(request, meet_id, team_id):
     sections = []
-    individual_entries = MeetAthleteIndividualEntry.objects.filter(meet_id=meet_id, athlete__team_id=team_id)
-    relay_entries = MeetAthleteRelayEntry.objects.filter(meet_id=meet_id, athlete_1__team_id=team_id)
+    individual_entries = MeetAthleteIndividualEntry.objects.filter(
+        meet_id=meet_id, athlete__team_id=team_id
+    )
+    relay_entries = MeetAthleteRelayEntry.objects.filter(
+        meet_id=meet_id, athlete_1__team_id=team_id
+    )
     entries_by_event = defaultdict(lambda: [])
 
     for entry in individual_entries:
@@ -37,25 +51,44 @@ def meet_entry_form(request, meet_id, team_id):
             forms = []
             for i in range(4):
                 try:
-                    forms.append(MeetAthleteIndividualEntryForm(team_id, prefix=f"{event.as_prefix()}-{i}", initial={"athlete": entries_by_event[event][i].athlete_id, "seed": entries_by_event[event][i].seed}))
+                    forms.append(
+                        MeetAthleteIndividualEntryForm(
+                            team_id,
+                            prefix=f"{event.as_prefix()}-{i}",
+                            initial={
+                                "athlete": entries_by_event[event][i].athlete_id,
+                                "seed": entries_by_event[event][i].seed,
+                            },
+                        )
+                    )
                 except IndexError:
-                    forms.append(MeetAthleteIndividualEntryForm(team_id, prefix=f"{event.as_prefix()}-{i}"))
-            sections.append({
-                "event": event.value,
-                "forms": forms
-            })
+                    forms.append(
+                        MeetAthleteIndividualEntryForm(
+                            team_id, prefix=f"{event.as_prefix()}-{i}"
+                        )
+                    )
+            sections.append({"event": event.value, "forms": forms})
         elif event in RELAY_EVENTS:
             forms = []
             for i in range(4):
                 try:
-                    forms.append(MeetAthleteRelayEntryForm(team_id, prefix=f"{event.as_prefix()}-{i}", initial={
-                        "athlete_1": entries_by_event[event][i].athlete_1_id, "seed": entries_by_event[event][i].seed}))
+                    forms.append(
+                        MeetAthleteRelayEntryForm(
+                            team_id,
+                            prefix=f"{event.as_prefix()}-{i}",
+                            initial={
+                                "athlete_1": entries_by_event[event][i].athlete_1_id,
+                                "seed": entries_by_event[event][i].seed,
+                            },
+                        )
+                    )
                 except IndexError:
-                    forms.append(MeetAthleteRelayEntryForm(team_id, prefix=f"{event.as_prefix()}-{i}"))
-            sections.append({
-                "event": event.value,
-                "forms": forms
-            })
+                    forms.append(
+                        MeetAthleteRelayEntryForm(
+                            team_id, prefix=f"{event.as_prefix()}-{i}"
+                        )
+                    )
+            sections.append({"event": event.value, "forms": forms})
 
     return render(request, "meet_entry.html", {"sections": sections})
 
@@ -63,7 +96,9 @@ def meet_entry_form(request, meet_id, team_id):
 @login_required
 @require_http_methods(["POST"])
 def save_meet_entry_form(request, meet_id, team_id):
-    entries = MeetAthleteIndividualEntry.objects.filter(meet_id=meet_id, athlete__team_id=team_id)
+    entries = MeetAthleteIndividualEntry.objects.filter(
+        meet_id=meet_id, athlete__team_id=team_id
+    )
     entries_by_event_athlete_id = {}
     for entry in entries:
         entries_by_event_athlete_id[(entry.event, str(entry.athlete.id))] = entry
@@ -81,9 +116,16 @@ def save_meet_entry_form(request, meet_id, team_id):
                 del entries_by_event_athlete_id[(event, athlete_id)]
             else:
                 if seed:
-                    MeetAthleteIndividualEntry.objects.create(meet_id=meet_id, athlete_id=int(athlete_id), event=event, seed=Decimal(seed))
+                    MeetAthleteIndividualEntry.objects.create(
+                        meet_id=meet_id,
+                        athlete_id=int(athlete_id),
+                        event=event,
+                        seed=Decimal(seed),
+                    )
                 else:
-                    MeetAthleteIndividualEntry.objects.create(meet_id=meet_id, athlete_id=int(athlete_id), event=event)
+                    MeetAthleteIndividualEntry.objects.create(
+                        meet_id=meet_id, athlete_id=int(athlete_id), event=event
+                    )
 
     for entry in entries_by_event_athlete_id.values():
         entry.delete()

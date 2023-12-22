@@ -3,9 +3,17 @@ from django.utils.html import format_html
 
 from common import utils
 from common.admin import BaseAdmin
-from registration.models import (Athlete, CoachEntry, League, LeagueTeamEntry,
-                                 Meet, MeetAthleteIndividualEntry,
-                                 MeetAthleteRelayEntry, MeetTeamEntry, Team)
+from registration.models import (
+    Athlete,
+    CoachEntry,
+    League,
+    LeagueTeamEntry,
+    Meet,
+    MeetAthleteIndividualEntry,
+    MeetAthleteRelayEntry,
+    MeetTeamEntry,
+    Team,
+)
 
 
 @admin.register(League)
@@ -37,8 +45,12 @@ class MeetAdmin(BaseAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        teams_ids = CoachEntry.objects.filter(profile=request.user).values_list("team_id", flat=True)
-        meet_ids = MeetTeamEntry.objects.filter(team_id__in=teams_ids).values_list("meet_id", flat=True)
+        teams_ids = CoachEntry.objects.filter(profile=request.user).values_list(
+            "team_id", flat=True
+        )
+        meet_ids = MeetTeamEntry.objects.filter(team_id__in=teams_ids).values_list(
+            "meet_id", flat=True
+        )
         return qs.filter(id__in=meet_ids)
 
 
@@ -51,7 +63,9 @@ class AthleteAdmin(BaseAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        teams_ids = CoachEntry.objects.filter(profile=request.user).values_list("team_id", flat=True)
+        teams_ids = CoachEntry.objects.filter(profile=request.user).values_list(
+            "team_id", flat=True
+        )
         return qs.filter(team_id__in=teams_ids)
 
 
@@ -62,18 +76,40 @@ class LeagueTeamRegistryAdmin(BaseAdmin):
 
 @admin.register(MeetTeamEntry)
 class MeetTeamRegistryAdmin(BaseAdmin):
-    list_display = ("id", utils.linkify_fk("meet"), utils.linkify_fk("team"), lambda entry: format_html('<a href="{}">Edit meet entries</a>', f"/registration/meet/{entry.meet_id}/team/{entry.team_id}"))
+    list_display = (
+        "id",
+        utils.linkify_fk("meet"),
+        utils.linkify_fk("team"),
+        lambda entry: format_html(
+            '<a href="{}">Edit meet entries</a>',
+            f"/registration/meet/{entry.meet_id}/team/{entry.team_id}",
+        ),
+    )
 
 
 @admin.register(MeetAthleteIndividualEntry)
 class MeetAthleteIndividualRegistryAdmin(BaseAdmin):
-    list_display = ("id", utils.linkify_fk("meet"), utils.linkify_fk("athlete"), "event", "seed")
+    list_display = (
+        "id",
+        utils.linkify_fk("meet"),
+        utils.linkify_fk("athlete"),
+        "event",
+        "seed",
+    )
 
 
 @admin.register(MeetAthleteRelayEntry)
 class MeetAthleteRelayRegistryAdmin(BaseAdmin):
-    list_display = ("id", utils.linkify_fk("meet"), utils.linkify_fk("athlete_1"), utils.linkify_fk("athlete_2"),
-                    utils.linkify_fk("athlete_3"), utils.linkify_fk("athlete_4"), "event", "seed")
+    list_display = (
+        "id",
+        utils.linkify_fk("meet"),
+        utils.linkify_fk("athlete_1"),
+        utils.linkify_fk("athlete_2"),
+        utils.linkify_fk("athlete_3"),
+        utils.linkify_fk("athlete_4"),
+        "event",
+        "seed",
+    )
 
 
 @admin.register(CoachEntry)
