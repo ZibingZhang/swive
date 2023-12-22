@@ -25,9 +25,9 @@ def meet_entry_form(request, meet_id, team_id):
                 forms = []
                 for i in range(4):
                     try:
-                        forms.append(MeetAthleteIndividualEntryForm(team_id, prefix=f"{event.as_prefix()}_{i}", initial={"athlete": entries_by_event[event][i].athlete_id, "seed": entries_by_event[event][i].seed}))
+                        forms.append(MeetAthleteIndividualEntryForm(team_id, prefix=f"{event.as_prefix()}-{i}", initial={"athlete": entries_by_event[event][i].athlete_id, "seed": entries_by_event[event][i].seed}))
                     except IndexError:
-                        forms.append(MeetAthleteIndividualEntryForm(team_id, prefix=f"{event.as_prefix()}_{i}"))
+                        forms.append(MeetAthleteIndividualEntryForm(team_id, prefix=f"{event.as_prefix()}-{i}"))
                 sections.append({
                     "event": event.value,
                     "forms": forms

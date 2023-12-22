@@ -3,7 +3,11 @@ document.addEventListener('DOMContentLoaded', function () {
   function handleForm(event) {
     event.preventDefault();
     var data = new FormData(form);
-    fetch(window.location.origin + '/registration/conference/save/', {
+    console.log(location.pathname);
+    var match = location.pathname.match(/registration\/meet\/(\d+)\/team\/(\d+)\//);
+    var meetId = match[1];
+    var teamId = match[2];
+    fetch(window.location.origin + `/registration/meet/${meetId}/team/${teamId}/save/`, {
       method: 'POST',
         body: new FormData(event.target),
       }).then(function (response) {
