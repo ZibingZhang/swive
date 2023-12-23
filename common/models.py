@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Q
 
@@ -70,7 +71,12 @@ class Athlete(BaseModel):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    high_school_class_of = models.IntegerField(default=None, blank=True, null=True)
+    high_school_class_of = models.PositiveIntegerField(
+        default=None,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1990), MaxValueValidator(2050)],
+    )
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"
