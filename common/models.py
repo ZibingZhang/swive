@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import F, Q
 
 from common.constants import Event
 
@@ -9,17 +10,70 @@ class BaseManager(models.Manager):
 
 
 class BaseModel(models.Model):
-    class Meta:
-        abstract = True
-
     deleted = models.BooleanField(default=False, editable=False)
     objects = BaseManager()
+
+    class Meta:
+        abstract = True
 
     def delete(self):
         """Mark the record as deleted instead of deleting it"""
 
         self.deleted = True
         self.save()
+
+
+class League(BaseModel):
+    name = models.CharField(max_length=100)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Gender(models.TextChoices):
+    FEMALE = "F", "Female"
+    MALE = "M", "Male"
+
+    def __str__(self) -> str:
+        return self.label
+
+
+class Team(BaseModel):
+    name = models.CharField(max_length=50)
+    gender = models.CharField(
+        max_length=1, choices=Gender.choices, blank=True, null=True
+    )
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Meet(BaseModel):
+    league = models.ForeignKey(League, on_delete=models.CASCADE)
+    start_date = models.DateField("start date")
+    end_date = models.DateField("end date")
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                name="start_date_before_end_date",
+                check=Q(start_date__lte=F("end_date")),
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.start_date})"
+
+
+class Athlete(BaseModel):
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    high_school_class_of = models.IntegerField(default=None, blank=True, null=True)
+
+    def __str__(self) -> str:
+        return f"{self.first_name} {self.last_name}"
 
 
 class EventChoice(models.TextChoices):

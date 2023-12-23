@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "import_export",
+    "common.apps.CommonConfig",
     "registration.apps.RegistrationConfig",
     "accounts.apps.UsersConfig",
 ]
