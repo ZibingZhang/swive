@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.forms.widgets import TextInput
 
 from common.forms import BaseModelForm

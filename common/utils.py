@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from django.urls import reverse
 from django.utils.html import format_html
 
 
 # https://stackoverflow.com/a/53092940
-def linkify_fk(field_name):
+def linkify_fk(field_name: str):
     """
     Converts a foreign key value into clickable links.
 
@@ -11,7 +13,7 @@ def linkify_fk(field_name):
     Link will be admin url for the admin url for obj.parent.id:change
     """
 
-    def _linkify(obj):
+    def _linkify_fk(obj):
         linked_obj = getattr(obj, field_name)
         if linked_obj is None:
             return "-"
@@ -21,5 +23,5 @@ def linkify_fk(field_name):
         link_url = reverse(view_name, args=[linked_obj.pk])
         return format_html('<a href="{}">{}</a>', link_url, linked_obj)
 
-    _linkify.short_description = field_name  # Sets column name
-    return _linkify
+    _linkify_fk.short_description = field_name  # Sets column name
+    return _linkify_fk

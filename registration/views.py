@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from collections import defaultdict
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -18,10 +21,13 @@ from registration.models import (
     MeetAthleteRelayEntry,
 )
 
+if TYPE_CHECKING:
+    from django.http import HttpRequest
+
 
 @login_required
 @require_http_methods(["GET"])
-def manage_athletes(request):
+def manage_athletes(request: HttpRequest) -> HttpResponse:
     return render(
         request,
         "athletes.html",
@@ -31,7 +37,7 @@ def manage_athletes(request):
 
 @login_required
 @require_http_methods(["GET"])
-def meet_entry_form(request, meet_id, team_id):
+def meet_entry_form(request: HttpRequest, meet_id, team_id) -> HttpResponse:
     sections = []
     individual_entries = MeetAthleteIndividualEntry.objects.filter(
         meet_id=meet_id, athlete__team_id=team_id
@@ -95,7 +101,9 @@ def meet_entry_form(request, meet_id, team_id):
 
 @login_required
 @require_http_methods(["POST"])
-def save_meet_entry_form(request, meet_id, team_id):
+def save_meet_entry_form(
+    request: HttpRequest, meet_id: int, team_id: int
+) -> HttpResponse:
     entries = MeetAthleteIndividualEntry.objects.filter(
         meet_id=meet_id, athlete__team_id=team_id
     )
@@ -130,3 +138,7 @@ def save_meet_entry_form(request, meet_id, team_id):
     for entry in entries_by_event_athlete_id.values():
         entry.delete()
     return HttpResponse()
+
+
+def _validate_meet_and_team_ids(meet_id: int, team_id: int) -> None:
+    pass

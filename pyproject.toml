@@ -23,6 +23,7 @@ dev = [
     "flake8>=6.1",
     "isort>=5.13",
     "pyproject-flake8>=5.0",
+    "django-stubs[compatible-mypy]>=4.2",
 ]
 
 [project.urls]
@@ -42,3 +43,9 @@ extend-ignore = "E203"
 
 [tool.isort]
 profile = "black"
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "myproject.settings"

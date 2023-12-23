@@ -1,9 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from django.contrib import admin
+from django.db import models
 from import_export.admin import ImportExportModelAdmin
 
 from common import utils
 from common.models import Athlete, League, Meet, Team
 from registration.models import CoachEntry, MeetTeamEntry
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
 
 class BaseAdmin(ImportExportModelAdmin):
@@ -22,7 +30,7 @@ class TeamAdmin(BaseAdmin):
     list_filter = ("gender",)
     search_fields = ("name",)
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: HttpRequest) -> models.QuerySet:
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
@@ -35,7 +43,7 @@ class MeetAdmin(BaseAdmin):
     list_filter = ("name", "start_date", "end_date")
     search_fields = ("name", "start_date", "end_date")
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: HttpRequest) -> models.QuerySet:
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
@@ -53,7 +61,7 @@ class AthleteAdmin(BaseAdmin):
     list_display = ("__str__", utils.linkify_fk("team"))
     search_fields = ("first_name", "last_name", "team")
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: HttpRequest) -> models.QuerySet:
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs

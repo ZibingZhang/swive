@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Q
@@ -6,7 +8,7 @@ from common.constants import Event
 
 
 class BaseManager(models.Manager):
-    def get_queryset(self):
+    def get_queryset(self) -> models.QuerySet:
         return models.QuerySet(self.model, using=self._db).exclude(deleted=True)
 
 
@@ -17,9 +19,8 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-    def delete(self):
+    def delete(self, *args) -> None:
         """Mark the record as deleted instead of deleting it"""
-
         self.deleted = True
         self.save()
 
@@ -79,7 +80,7 @@ class Athlete(BaseModel):
     )
 
     def __str__(self) -> str:
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name} ({self.pk})"
 
 
 class EventChoice(models.TextChoices):
