@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import Group as DjangoGroup
 
 
 class Profile(AbstractUser):
@@ -8,3 +9,7 @@ class Profile(AbstractUser):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.username})"
+
+
+class Group(DjangoGroup):
+    pass

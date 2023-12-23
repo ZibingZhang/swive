@@ -1,11 +1,12 @@
 from django.contrib import admin
+from django.contrib.auth.admin import Group as DjangoGroup
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
-from django.contrib.auth.models import Group
 
-from accounts.models import Profile
+from accounts.models import Group, Profile
 from common.admin import BaseAdmin
 
-admin.site.unregister(Group)
+
+admin.site.unregister(DjangoGroup)
 
 
 @admin.register(Profile)

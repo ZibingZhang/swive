@@ -26,17 +26,11 @@ class MeetEntryForm(BaseModelForm):
 
     @property
     def athlete_fields(self):
-        return (
-            field for field in self.visible_fields()
-            if "athlete" in field.name
-        )
+        return (field for field in self.visible_fields() if "athlete" in field.name)
 
     @property
     def seed_field(self):
-        return next(
-            field for field in self.visible_fields()
-            if "seed" == field.name
-        )
+        return next(field for field in self.visible_fields() if "seed" == field.name)
 
     @staticmethod
     def _filter_athlete_choices(field, team_id):
