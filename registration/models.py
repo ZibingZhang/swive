@@ -6,8 +6,8 @@ from common.models import Athlete, BaseModel, EventChoice, League, Meet, Team
 
 
 class LeagueTeamEntry(BaseModel):
-    league = models.ForeignKey(League, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    league = models.ForeignKey(League, on_delete=models.RESTRICT)
+    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
 
     class Meta(BaseModel.Meta):
         verbose_name = "League Team Entry"
@@ -18,8 +18,8 @@ class LeagueTeamEntry(BaseModel):
 
 
 class MeetTeamEntry(BaseModel):
-    meet = models.ForeignKey(Meet, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
+    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
 
     class Meta(BaseModel.Meta):
         verbose_name = "Meet Team Entry"
@@ -34,8 +34,8 @@ class MeetTeamEntry(BaseModel):
 
 
 class MeetAthleteIndividualEntry(BaseModel):
-    meet = models.ForeignKey(Meet, on_delete=models.CASCADE)
-    athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE)
+    meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
+    athlete = models.ForeignKey(Athlete, on_delete=models.RESTRICT)
     event = models.CharField(max_length=30, choices=EventChoice.choices)
     seed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
 
@@ -48,18 +48,18 @@ class MeetAthleteIndividualEntry(BaseModel):
 
 
 class MeetAthleteRelayEntry(BaseModel):
-    meet = models.ForeignKey(Meet, on_delete=models.CASCADE)
+    meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
     athlete_1 = models.ForeignKey(
-        Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set1"
+        Athlete, on_delete=models.RESTRICT, related_name="meetathleterelayregistry_set1"
     )
     athlete_2 = models.ForeignKey(
-        Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set2"
+        Athlete, on_delete=models.RESTRICT, related_name="meetathleterelayregistry_set2"
     )
     athlete_3 = models.ForeignKey(
-        Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set3"
+        Athlete, on_delete=models.RESTRICT, related_name="meetathleterelayregistry_set3"
     )
     athlete_4 = models.ForeignKey(
-        Athlete, on_delete=models.CASCADE, related_name="meetathleterelayregistry_set4"
+        Athlete, on_delete=models.RESTRICT, related_name="meetathleterelayregistry_set4"
     )
     event = models.CharField(max_length=30, choices=EventChoice.choices)
     seed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
@@ -84,8 +84,8 @@ class MeetAthleteRelayEntry(BaseModel):
 
 
 class CoachEntry(BaseModel):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
+    profile = models.ForeignKey(Profile, on_delete=models.RESTRICT)
 
     class Meta(BaseModel.Meta):
         verbose_name = "Coach Entry"

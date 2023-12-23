@@ -50,7 +50,7 @@ class Team(BaseModel):
 
 
 class Meet(BaseModel):
-    league = models.ForeignKey(League, on_delete=models.CASCADE)
+    league = models.ForeignKey(League, on_delete=models.RESTRICT)
     start_date = models.DateField("start date")
     end_date = models.DateField("end date")
     name = models.CharField(max_length=100)
@@ -70,7 +70,7 @@ class Meet(BaseModel):
 class Athlete(BaseModel):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
     high_school_class_of = models.PositiveIntegerField(
         default=None,
         blank=True,
