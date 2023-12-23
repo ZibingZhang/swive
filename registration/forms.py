@@ -17,13 +17,13 @@ class AthleteForm(BaseModelForm):
 
 
 class MeetEntryForm(BaseModelForm):
-    def __init__(self, team_id, *args, **kwargs) -> None:
+    def __init__(self, team_pk, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if "athlete" in name:
                 field.required = False
                 field.empty_label = ""
-                self._filter_athlete_choices(field, team_id)
+                self._filter_athlete_choices(field, team_pk)
         self.fields["seed"].widget = TextInput()
 
     @property
@@ -35,9 +35,9 @@ class MeetEntryForm(BaseModelForm):
         return next(field for field in self.visible_fields() if "seed" == field.name)
 
     @staticmethod
-    def _filter_athlete_choices(field, team_id):
+    def _filter_athlete_choices(field, team_pk: int):
         field.choices = filter(
-            lambda choice: choice[0] == "" or choice[0].instance.team_id == team_id,
+            lambda choice: choice[0] == "" or choice[0].instance.team.pk == team_pk,
             field.choices,
         )
 
@@ -47,8 +47,8 @@ class MeetAthleteIndividualEntryForm(MeetEntryForm):
         model = MeetAthleteIndividualEntry
         exclude = ("meet", "event")
 
-    def __init__(self, team_id, *args, **kwargs) -> None:
-        super().__init__(team_id, *args, **kwargs)
+    def __init__(self, team_pk, *args, **kwargs) -> None:
+        super().__init__(team_pk, *args, **kwargs)
 
 
 class MeetAthleteRelayEntryForm(MeetEntryForm):
@@ -56,5 +56,5 @@ class MeetAthleteRelayEntryForm(MeetEntryForm):
         model = MeetAthleteRelayEntry
         exclude = ("meet", "event")
 
-    def __init__(self, team_id, *args, **kwargs) -> None:
-        super().__init__(team_id, *args, **kwargs)
+    def __init__(self, team_pk, *args, **kwargs) -> None:
+        super().__init__(team_pk, *args, **kwargs)

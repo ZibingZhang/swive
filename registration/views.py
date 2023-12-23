@@ -37,13 +37,13 @@ def manage_athletes(request: HttpRequest) -> HttpResponse:
 
 @login_required
 @require_http_methods(["GET"])
-def meet_entry_form(request: HttpRequest, meet_id, team_id) -> HttpResponse:
+def meet_entry_form(request: HttpRequest, meet_pk, team_pk) -> HttpResponse:
     sections = []
     individual_entries = MeetAthleteIndividualEntry.objects.filter(
-        meet_id=meet_id, athlete__team_id=team_id
+        meet__pk=meet_pk, athlete__team__pk=team_pk
     )
     relay_entries = MeetAthleteRelayEntry.objects.filter(
-        meet_id=meet_id, athlete_1__team_id=team_id
+        meet__pk=meet_pk, athlete_1__team__pk=team_pk
     )
     entries_by_event = defaultdict(lambda: [])
 
@@ -59,10 +59,10 @@ def meet_entry_form(request: HttpRequest, meet_id, team_id) -> HttpResponse:
                 try:
                     forms.append(
                         MeetAthleteIndividualEntryForm(
-                            team_id,
+                            team_pk,
                             prefix=f"{event.as_prefix()}-{i}",
                             initial={
-                                "athlete": entries_by_event[event][i].athlete_id,
+                                "athlete": entries_by_event[event][i].athlete.pk,
                                 "seed": entries_by_event[event][i].seed,
                             },
                         )
@@ -70,7 +70,7 @@ def meet_entry_form(request: HttpRequest, meet_id, team_id) -> HttpResponse:
                 except IndexError:
                     forms.append(
                         MeetAthleteIndividualEntryForm(
-                            team_id, prefix=f"{event.as_prefix()}-{i}"
+                            team_pk, prefix=f"{event.as_prefix()}-{i}"
                         )
                     )
             sections.append({"event": event.value, "forms": forms})
@@ -80,10 +80,10 @@ def meet_entry_form(request: HttpRequest, meet_id, team_id) -> HttpResponse:
                 try:
                     forms.append(
                         MeetAthleteRelayEntryForm(
-                            team_id,
+                            team_pk,
                             prefix=f"{event.as_prefix()}-{i}",
                             initial={
-                                "athlete_1": entries_by_event[event][i].athlete_1_id,
+                                "athlete_1": entries_by_event[event][i].athlete_1.pk,
                                 "seed": entries_by_event[event][i].seed,
                             },
                         )
@@ -91,7 +91,7 @@ def meet_entry_form(request: HttpRequest, meet_id, team_id) -> HttpResponse:
                 except IndexError:
                     forms.append(
                         MeetAthleteRelayEntryForm(
-                            team_id, prefix=f"{event.as_prefix()}-{i}"
+                            team_pk, prefix=f"{event.as_prefix()}-{i}"
                         )
                     )
             sections.append({"event": event.value, "forms": forms})
@@ -102,43 +102,43 @@ def meet_entry_form(request: HttpRequest, meet_id, team_id) -> HttpResponse:
 @login_required
 @require_http_methods(["POST"])
 def save_meet_entry_form(
-    request: HttpRequest, meet_id: int, team_id: int
+    request: HttpRequest, meet_pk: int, team_pk: int
 ) -> HttpResponse:
     entries = MeetAthleteIndividualEntry.objects.filter(
-        meet_id=meet_id, athlete__team_id=team_id
+        meet__pk=meet_pk, athlete__team__pk=team_pk
     )
-    entries_by_event_athlete_id = {}
+    entries_by_event_athlete_pk = {}
     for entry in entries:
-        entries_by_event_athlete_id[(entry.event, str(entry.athlete.id))] = entry
+        entries_by_event_athlete_pk[(entry.event, str(entry.athlete.pk))] = entry
     for event in INDIVIDUAL_EVENTS:
         for i in range(4):
-            athlete_id = request.POST[f"{event.as_prefix()}-{i}-athlete"]
+            athlete_pk = request.POST[f"{event.as_prefix()}-{i}-athlete"]
             seed = request.POST[f"{event.as_prefix()}-{i}-seed"]
-            if athlete_id == "" or seed == "":
+            if athlete_pk == "" or seed == "":
                 # TODO: validation error
                 continue
-            entry = entries_by_event_athlete_id.get((event, athlete_id))
+            entry = entries_by_event_athlete_pk.get((event, athlete_pk))
             if entry:
                 entry.seed = Decimal(seed)
                 entry.save()
-                del entries_by_event_athlete_id[(event, athlete_id)]
+                del entries_by_event_athlete_pk[(event, athlete_pk)]
             else:
                 if seed:
                     MeetAthleteIndividualEntry.objects.create(
-                        meet_id=meet_id,
-                        athlete_id=int(athlete_id),
+                        meet_pk=meet_pk,
+                        athlete_pk=int(athlete_pk),
                         event=event,
                         seed=Decimal(seed),
                     )
                 else:
                     MeetAthleteIndividualEntry.objects.create(
-                        meet_id=meet_id, athlete_id=int(athlete_id), event=event
+                        meet_pk=meet_pk, athlete_pk=int(athlete_pk), event=event
                     )
 
-    for entry in entries_by_event_athlete_id.values():
+    for entry in entries_by_event_athlete_pk.values():
         entry.delete()
     return HttpResponse()
 
 
-def _validate_meet_and_team_ids(meet_id: int, team_id: int) -> None:
-    pass
+def _validate_meet_and_team_pks(meet_pk: int, team_pk: int) -> None:
+    ...
