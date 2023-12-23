@@ -5,7 +5,6 @@ from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from accounts.models import Group, Profile
 from common.admin import BaseAdmin
 
-
 admin.site.unregister(DjangoGroup)
 
 
