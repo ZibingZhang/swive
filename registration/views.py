@@ -5,11 +5,13 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse, Http404
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from common.constants import EVENT_ORDER, INDIVIDUAL_EVENTS, RELAY_EVENTS
+from common.models import Meet, Team
 from registration.forms import (
     AthleteForm,
     MeetAthleteIndividualEntryForm,
@@ -19,10 +21,13 @@ from registration.models import (
     Athlete,
     MeetAthleteIndividualEntry,
     MeetAthleteRelayEntry,
+    MeetTeamEntry,
+    CoachEntry,
 )
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
+    from accounts.models import Profile
 
 
 @login_required
@@ -38,6 +43,8 @@ def manage_athletes(request: HttpRequest) -> HttpResponse:
 @login_required
 @require_http_methods(["GET"])
 def meet_entry_form(request: HttpRequest, meet_pk, team_pk) -> HttpResponse:
+    _validate_request(request.user, meet_pk, team_pk)
+
     sections = []
     individual_entries = MeetAthleteIndividualEntry.objects.filter(
         meet__pk=meet_pk, athlete__team__pk=team_pk
@@ -104,6 +111,8 @@ def meet_entry_form(request: HttpRequest, meet_pk, team_pk) -> HttpResponse:
 def save_meet_entry_form(
     request: HttpRequest, meet_pk: int, team_pk: int
 ) -> HttpResponse:
+    _validate_request(request.user, meet_pk, team_pk)
+
     entries = MeetAthleteIndividualEntry.objects.filter(
         meet__pk=meet_pk, athlete__team__pk=team_pk
     )
@@ -140,5 +149,18 @@ def save_meet_entry_form(
     return HttpResponse()
 
 
-def _validate_meet_and_team_pks(meet_pk: int, team_pk: int) -> None:
-    ...
+def _validate_request(user: Profile, meet_pk: int, team_pk: int) -> None:
+    if not Meet.objects.filter(pk=meet_pk).exists():
+        raise Http404("Meet not found")
+    if not Team.objects.filter(pk=team_pk).exists():
+        raise Http404("Team not found")
+    if not MeetTeamEntry.objects.filter(meet__pk=meet_pk, team__pk=team_pk).exists():
+        raise Http404("Team not registered to meet")
+
+    if user.is_superuser:
+        return
+    team_pks = CoachEntry.objects.filter(profile=user).values_list(
+        "team__pk", flat=True
+    )
+    if team_pk not in team_pks:
+        raise PermissionDenied("User is not registered to the team")
