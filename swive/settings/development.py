@@ -6,8 +6,8 @@ INTERNAL_IPS = ["127.0.0.1"]
 
 SECRET_KEY = "django-insecure-txsqk2w&9@$v_xo2pc0129!30@)khf3y%*+p62y1(kd#_500$a"
 
-# DATABASE SETTINGS
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
+# Database Settings
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",

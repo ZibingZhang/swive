@@ -6,8 +6,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = [".needhamswive.com"]
 
-# DATABASE SETTINGS
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
+# Database Settings
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
