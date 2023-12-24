@@ -27,7 +27,7 @@ from registration.models import (
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
-    from accounts.models import Profile
+    from account.models import Profile
 
 
 @login_required

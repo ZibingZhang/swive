@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     # Third Party Apps
     "import_export",
     # Local Apps
-    "accounts.apps.AccountsConfig",
+    "account.apps.AccountConfig",
     "common.apps.CommonConfig",
     "registration.apps.RegistrationConfig",
 ]
@@ -118,7 +118,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-AUTH_USER_MODEL = "accounts.Profile"
+AUTH_USER_MODEL = "account.Profile"
 
 
 # django-import-export settings

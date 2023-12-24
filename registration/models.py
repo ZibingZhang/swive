@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from accounts.models import Profile
+from account.models import Profile
 from common.models import Athlete, BaseModel, EventChoice, League, Meet, Team
 
 
