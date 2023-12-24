@@ -22,6 +22,7 @@
       <div class="collapse" id="account-collapse">
         <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
           {% if not user.is_authenticated %}
+            <li><a href="{% url 'login' %}" class="link-dark rounded">Log In</a></li>
             <li><a href="#" class="link-dark rounded">Create Profile</a></li>
           {% else %}
             {% if user.is_superuser %}
@@ -35,9 +36,13 @@
   </ul>
 
   {% if user.is_authenticated %}
-    <hr>
     <div class="text-center">
       {{ user.sidebar_display_name }}
     </div>
+    <hr>
+    <form action="{% url 'logout' %}" method="POST" id ="logout" class="nav-link">
+        {% csrf_token %}
+        <input class="form-control" type="submit" value="Logout">
+    </form>
   {% endif %}
 </div>

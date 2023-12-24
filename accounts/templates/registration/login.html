@@ -1,3 +1,5 @@
+{% extends "base.html" %}
+
 {% block title %}Log In{% endblock %}
 
 {% block content %}
@@ -6,8 +8,17 @@
 {% else %}
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Log In</button>
+    {{ form.non_field_errors }}
+
+    <div class="mb-3">
+      <label for="id_username" class="form-label">Username</label>
+      <input type="text" class="form-control" name="username" autofocus="" autocapitalize="none" autocomplete="username" maxlength="150" required="" id="id_username">
+    </div>
+    <div class="mb-3">
+      <label for="id_password" class="form-label">Password</label>
+      <input type="password" class="form-control" name="password" autocomplete="current-password" required="" id="id_password">
+    </div>
+    <button type="submit" class="btn btn-primary">Log In</button>
   </form>
 {% endif %}
 {% endblock %}
