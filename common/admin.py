@@ -48,10 +48,10 @@ class MeetAdmin(BaseAdmin):
         if request.user.is_superuser:
             return qs
         teams_pks = CoachEntry.objects.filter(profile=request.user).values_list(
-            "team_pk", flat=True
+            "team__pk", flat=True
         )
         meet_pks = MeetTeamEntry.objects.filter(team_pk__in=teams_pks).values_list(
-            "meet_pk", flat=True
+            "meet__pk", flat=True
         )
         return qs.filter(pk__in=meet_pks)
 

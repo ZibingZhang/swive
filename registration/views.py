@@ -134,14 +134,14 @@ def save_meet_entry_form(
             else:
                 if seed:
                     MeetAthleteIndividualEntry.objects.create(
-                        meet_pk=meet_pk,
+                        meet__pk=meet_pk,
                         athlete_pk=int(athlete_pk),
                         event=event,
                         seed=Decimal(seed),
                     )
                 else:
                     MeetAthleteIndividualEntry.objects.create(
-                        meet_pk=meet_pk, athlete_pk=int(athlete_pk), event=event
+                        meet__pk=meet_pk, athlete_pk=int(athlete_pk), event=event
                     )
 
     for entry in entries_by_event_athlete_pk.values():

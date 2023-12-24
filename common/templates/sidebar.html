@@ -1,0 +1,43 @@
+<div class="position-sticky d-flex flex-column flex-shrink-0 h-100">
+  <a href="/" class="d-flex align-items-center pb-3 mb-3 link-dark text-decoration-none border-bottom">
+    <span class="fs-5 fw-semibold">Swive Management</span>
+  </a>
+  <ul class="list-unstyled ps-0 mb-auto">
+    <li class="mb-1">
+      <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#home-collapse" aria-expanded="false">
+        Overview
+      </button>
+      <div class="collapse" id="home-collapse">
+        <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+          <li><a href="#" class="link-dark rounded">Meets</a></li>
+          <li><a href="#" class="link-dark rounded">Teams</a></li>
+        </ul>
+      </div>
+    </li>
+    <li class="border-top my-3"></li>
+    <li class="mb-1">
+      <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#account-collapse" aria-expanded="false">
+        Account
+      </button>
+      <div class="collapse" id="account-collapse">
+        <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+          {% if not user.is_authenticated %}
+            <li><a href="#" class="link-dark rounded">Create Profile</a></li>
+          {% else %}
+            {% if user.is_superuser %}
+              <li><a href="/admin" class="link-dark rounded">Admin</a></li>
+            {% endif %}
+            <li><a href="{% url 'logout' %}" class="link-dark rounded">Log Out</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </li>
+  </ul>
+
+  {% if user.is_authenticated %}
+    <hr>
+    <div class="text-center">
+      {{ user.sidebar_display_name }}
+    </div>
+  {% endif %}
+</div>

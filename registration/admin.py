@@ -25,7 +25,7 @@ class MeetTeamRegistryAdmin(BaseAdmin):
         utils.linkify_fk("team"),
         lambda entry: format_html(
             '<a href="{}">Edit meet entries</a>',
-            f"/registration/meet/{entry.meet_pk}/team/{entry.team_pk}",
+            f"/registration/meet/{entry.meet.pk}/team/{entry.team.pk}",
         ),
     )
 
