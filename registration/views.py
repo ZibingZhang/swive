@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse, Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
@@ -19,14 +19,15 @@ from registration.forms import (
 )
 from registration.models import (
     Athlete,
+    CoachEntry,
     MeetAthleteIndividualEntry,
     MeetAthleteRelayEntry,
     MeetTeamEntry,
-    CoachEntry,
 )
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
+
     from account.models import Profile
 
 

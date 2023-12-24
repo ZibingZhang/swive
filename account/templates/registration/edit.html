@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Log In{% endblock %}
+{% block title %}Change Account{% endblock %}
 
 {% load django_bootstrap5 %}
 {% block content %}
   {% if user.is_authenticated %}
-    Hi {{ user.username }}!
-  {% else %}
     <form method="post">
       {% csrf_token %}
       {% bootstrap_form form %}
-      {% bootstrap_button button_type="submit" content="Login" %}
+      {% bootstrap_button button_type="submit" content="Save Account" %}
     </form>
+  {% else %}
+    You must be logged in to change your account.
   {% endif %}
 {% endblock %}

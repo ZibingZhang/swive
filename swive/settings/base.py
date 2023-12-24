@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third Party Apps
+    "django_bootstrap5",
     "import_export",
     # Local Apps
     "account.apps.AccountConfig",

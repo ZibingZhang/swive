@@ -23,5 +23,6 @@ urlpatterns = [
     path("robots.txt", TemplateView.as_view(template_name="robots.txt"), name="robots"),
     path("admin/", admin.site.urls),
     path("account/", include("django.contrib.auth.urls")),
+    path("account/", include("account.urls")),
     path("registration/", include("registration.urls")),
 ]

@@ -1,3 +1,3 @@
-DIRS="accounts common registration swive"
+DIRS="account common registration swive"
 python -m black $DIRS
 python -m isort $DIRS

@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Log In{% endblock %}
+{% block title %}Create Account{% endblock %}
 
 {% load django_bootstrap5 %}
 {% block content %}
   {% if user.is_authenticated %}
-    Hi {{ user.username }}!
+    You are already logged in.
+    Log out to create an account.
   {% else %}
     <form method="post">
       {% csrf_token %}
       {% bootstrap_form form %}
-      {% bootstrap_button button_type="submit" content="Login" %}
+      {% bootstrap_button button_type="submit" content="Create Account" %}
     </form>
   {% endif %}
 {% endblock %}

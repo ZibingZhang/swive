@@ -14,35 +14,42 @@
         </ul>
       </div>
     </li>
-    <li class="border-top my-3"></li>
-    <li class="mb-1">
-      <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#account-collapse" aria-expanded="false">
-        Account
-      </button>
-      <div class="collapse" id="account-collapse">
-        <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-          {% if not user.is_authenticated %}
-            <li><a href="{% url 'login' %}" class="link-dark rounded">Log In</a></li>
-            <li><a href="#" class="link-dark rounded">Create Profile</a></li>
-          {% else %}
+    {% if user.is_authenticated %}
+      <li class="border-top my-3"></li>
+      <li class="mb-1">
+        <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#account-collapse" aria-expanded="false">
+          Account
+        </button>
+        <div class="collapse" id="account-collapse">
+          <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+            <li><a href="/account/edit" class="link-dark rounded">Edit Account</a></li>
             {% if user.is_superuser %}
               <li><a href="/admin" class="link-dark rounded">Admin</a></li>
             {% endif %}
-            <li><a href="{% url 'logout' %}" class="link-dark rounded">Log Out</a></li>
-          {% endif %}
-        </ul>
-      </div>
+          </ul>
+        </div>
+      {% endif %}
     </li>
   </ul>
 
-  {% if user.is_authenticated %}
-    <div class="text-center">
-      {{ user.sidebar_display_name }}
-    </div>
-    <hr>
-    <form action="{% url 'logout' %}" method="POST" id ="logout" class="nav-link">
+  <div class="text-center">
+    {% if user.is_authenticated %}
+      <div>
+        {{ user.sidebar_display_name }}
+      </div>
+      <hr>
+      <form action="{% url 'logout' %}" method="post" id="logout" class="nav-link">
         {% csrf_token %}
         <input class="form-control" type="submit" value="Logout">
-    </form>
-  {% endif %}
+      </form>
+    {% else %}
+      <div class="form-control">
+        <a href="{% url 'login' %}" class="link-dark text-decoration-none">Log In</a>
+      </div>
+      <br>
+      <div class="form-control">
+        <a href="{% url 'create profile' %}" class="link-dark text-decoration-none">Create Account</a>
+      </div>
+    {% endif %}
+  </div>
 </div>

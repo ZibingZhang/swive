@@ -10,8 +10,9 @@ authors = [
     {name = "Zibing Zhang", email = "contact@zibingzhang.com"}
 ]
 dependencies = [
+    "Django>=5.0",
+    "django-bootstrap5",
     "django-import-export>=3.3.4",
-    "Django>=5.0"
 ]
 dynamic = [
     "version"
