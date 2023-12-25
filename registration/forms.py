@@ -3,11 +3,7 @@ from __future__ import annotations
 from django.forms.widgets import TextInput
 
 from common.forms import BaseModelForm
-from registration.models import (
-    Athlete,
-    MeetAthleteIndividualEntry,
-    MeetAthleteRelayEntry,
-)
+from registration.models import Athlete, MeetIndividualEntry, MeetRelayEntry
 
 
 class AthleteForm(BaseModelForm):
@@ -44,7 +40,7 @@ class MeetEntryForm(BaseModelForm):
 
 class MeetAthleteIndividualEntryForm(MeetEntryForm):
     class Meta:
-        model = MeetAthleteIndividualEntry
+        model = MeetIndividualEntry
         exclude = ("meet", "event")
 
     def __init__(self, team_pk, *args, **kwargs) -> None:
@@ -53,7 +49,7 @@ class MeetAthleteIndividualEntryForm(MeetEntryForm):
 
 class MeetAthleteRelayEntryForm(MeetEntryForm):
     class Meta:
-        model = MeetAthleteRelayEntry
+        model = MeetRelayEntry
         exclude = ("meet", "event")
 
     def __init__(self, team_pk, *args, **kwargs) -> None:

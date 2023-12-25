@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import abc
+
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -35,7 +37,7 @@ class MeetTeamEntry(BaseModel):
         return "Edit meet entries"
 
 
-class MeetAthleteIndividualEntry(BaseModel):
+class MeetIndividualEntry(BaseModel):
     meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
     athlete = models.ForeignKey(Athlete, on_delete=models.RESTRICT)
     event = models.CharField(max_length=30, choices=EventChoice.choices)
@@ -49,19 +51,19 @@ class MeetAthleteIndividualEntry(BaseModel):
         return f"{self.meet} - {self.athlete} - {self.event} - {self.seed}"
 
 
-class MeetAthleteRelayEntry(BaseModel):
+class MeetRelayEntry(BaseModel):
     meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
     athlete_1 = models.ForeignKey(
-        Athlete, on_delete=models.RESTRICT, related_name="meetathleterelayregistry_set1"
+        Athlete, on_delete=models.RESTRICT, related_name="meetrelayentry_set1"
     )
     athlete_2 = models.ForeignKey(
-        Athlete, on_delete=models.RESTRICT, related_name="meetathleterelayregistry_set2"
+        Athlete, on_delete=models.RESTRICT, related_name="meetrelayentry_set2"
     )
     athlete_3 = models.ForeignKey(
-        Athlete, on_delete=models.RESTRICT, related_name="meetathleterelayregistry_set3"
+        Athlete, on_delete=models.RESTRICT, related_name="meetrelayentry_set3"
     )
     athlete_4 = models.ForeignKey(
-        Athlete, on_delete=models.RESTRICT, related_name="meetathleterelayregistry_set4"
+        Athlete, on_delete=models.RESTRICT, related_name="meetrelayentry_set4"
     )
     event = models.CharField(max_length=30, choices=EventChoice.choices)
     seed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
@@ -83,6 +85,9 @@ class MeetAthleteRelayEntry(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.meet} - {self.athletes} - {self.event} - {self.seed}"
+
+
+MeetEntry = MeetIndividualEntry | MeetRelayEntry
 
 
 class CoachEntry(BaseModel):

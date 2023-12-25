@@ -6,8 +6,8 @@ from common.admin import BaseAdmin
 from registration.models import (
     CoachEntry,
     LeagueTeamEntry,
-    MeetAthleteIndividualEntry,
-    MeetAthleteRelayEntry,
+    MeetIndividualEntry,
+    MeetRelayEntry,
     MeetTeamEntry,
 )
 
@@ -30,7 +30,7 @@ class MeetTeamRegistryAdmin(BaseAdmin):
     )
 
 
-@admin.register(MeetAthleteIndividualEntry)
+@admin.register(MeetIndividualEntry)
 class MeetAthleteIndividualRegistryAdmin(BaseAdmin):
     list_display = (
         "id",
@@ -41,7 +41,7 @@ class MeetAthleteIndividualRegistryAdmin(BaseAdmin):
     )
 
 
-@admin.register(MeetAthleteRelayEntry)
+@admin.register(MeetRelayEntry)
 class MeetAthleteRelayRegistryAdmin(BaseAdmin):
     list_display = (
         "id",
