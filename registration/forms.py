@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from django.forms.widgets import TextInput
+from django import forms
 
-from common.forms import BaseModelForm
-from registration.models import Athlete, MeetIndividualEntry, MeetRelayEntry
+from common.forms import BaseForm, BaseModelForm
+from common.utils import is_seed
+from registration.models import Athlete
 
 
 class AthleteForm(BaseModelForm):
@@ -12,15 +13,11 @@ class AthleteForm(BaseModelForm):
         fields = "__all__"
 
 
-class MeetEntryForm(BaseModelForm):
-    def __init__(self, team_pk, *args, **kwargs) -> None:
+class MeetEntryForm(BaseForm):
+    seed = forms.CharField(max_length=10, required=False)
+
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        for name, field in self.fields.items():
-            if "athlete" in name:
-                field.required = False
-                field.empty_label = ""
-                self._filter_athlete_choices(field, team_pk)
-        self.fields["seed"].widget = TextInput()
 
     @property
     def athlete_fields(self):
@@ -30,33 +27,54 @@ class MeetEntryForm(BaseModelForm):
     def seed_field(self):
         return next(field for field in self.visible_fields() if "seed" == field.name)
 
-    @staticmethod
-    def _filter_athlete_choices(field, team_pk: int):
-        field.choices = filter(
-            lambda choice: choice[0] == "" or choice[0].instance.team.pk == team_pk,
-            field.choices,
-        )
+    def clean(self) -> None:
+        if not is_seed(self.cleaned_data["seed"]):
+            self.add_error("seed", "Seed not formatted properly")
 
 
 class MeetIndividualEntryForm(MeetEntryForm):
-    class Meta:
-        model = MeetIndividualEntry
-        exclude = ("meet", "event")
+    athlete = forms.TypedChoiceField(
+        choices=[("", "")], required=False, coerce=int, empty_value=None
+    )
 
-    def __init__(self, team_pk, *args, **kwargs) -> None:
-        super().__init__(team_pk, *args, **kwargs)
+    def __init__(self, athlete_choices: list[Athlete], *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["athlete"].choices += [
+            (athlete.id, str(athlete)) for athlete in athlete_choices
+        ]
 
     def clean(self) -> None:
-        pass
+        super().clean()
 
 
 class MeetRelayEntryForm(MeetEntryForm):
-    class Meta:
-        model = MeetRelayEntry
-        exclude = ("meet", "event")
+    athlete_1 = forms.TypedChoiceField(
+        choices=[("", "")], required=False, coerce=int, empty_value=None
+    )
+    athlete_2 = forms.TypedChoiceField(
+        choices=[("", "")], required=False, coerce=int, empty_value=None
+    )
+    athlete_3 = forms.TypedChoiceField(
+        choices=[("", "")], required=False, coerce=int, empty_value=None
+    )
+    athlete_4 = forms.TypedChoiceField(
+        choices=[("", "")], required=False, coerce=int, empty_value=None
+    )
 
-    def __init__(self, team_pk, *args, **kwargs) -> None:
-        super().__init__(team_pk, *args, **kwargs)
+    def __init__(self, athlete_choices: list[Athlete], *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["athlete_1"].choices += [
+            (athlete.id, str(athlete)) for athlete in athlete_choices
+        ]
+        self.fields["athlete_2"].choices += [
+            (athlete.id, str(athlete)) for athlete in athlete_choices
+        ]
+        self.fields["athlete_3"].choices += [
+            (athlete.id, str(athlete)) for athlete in athlete_choices
+        ]
+        self.fields["athlete_4"].choices += [
+            (athlete.id, str(athlete)) for athlete in athlete_choices
+        ]
 
     def clean(self) -> None:
-        pass
+        super().clean()

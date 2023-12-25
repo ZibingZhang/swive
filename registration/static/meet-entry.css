@@ -7,3 +7,16 @@ th {
 td > div.mb-3:last-child {
   margin-bottom: 0 !important;
 }
+
+.is-valid {
+  border-color: var(--bs-border-color) !important;
+  --bs-form-select-bg-icon: none !important;
+}
+
+input.is-valid {
+  background-image: none !important;
+}
+
+.is-valid:focus {
+  box-shadow: rgba(13, 110, 253, 0.25) 0px 0px 0px 4px !important;
+}
