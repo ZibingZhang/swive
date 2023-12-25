@@ -37,11 +37,17 @@ class MeetTeamEntry(BaseModel):
         return "Edit meet entries"
 
 
-class MeetIndividualEntry(BaseModel):
+class MeetEntry(BaseModel):
     meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
-    athlete = models.ForeignKey(Athlete, on_delete=models.RESTRICT)
     event = models.CharField(max_length=30, choices=EventChoice.choices)
     seed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+
+class MeetIndividualEntry(MeetEntry):
+    athlete = models.ForeignKey(Athlete, on_delete=models.RESTRICT)
 
     class Meta(BaseModel.Meta):
         verbose_name = "Individual Entry"
@@ -51,8 +57,7 @@ class MeetIndividualEntry(BaseModel):
         return f"{self.meet} - {self.athlete} - {self.event} - {self.seed}"
 
 
-class MeetRelayEntry(BaseModel):
-    meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
+class MeetRelayEntry(MeetEntry):
     athlete_1 = models.ForeignKey(
         Athlete, on_delete=models.RESTRICT, related_name="meetrelayentry_set1"
     )
@@ -65,8 +70,6 @@ class MeetRelayEntry(BaseModel):
     athlete_4 = models.ForeignKey(
         Athlete, on_delete=models.RESTRICT, related_name="meetrelayentry_set4"
     )
-    event = models.CharField(max_length=30, choices=EventChoice.choices)
-    seed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
 
     class Meta(BaseModel.Meta):
         verbose_name = "Relay Entry"
@@ -85,9 +88,6 @@ class MeetRelayEntry(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.meet} - {self.athletes} - {self.event} - {self.seed}"
-
-
-MeetEntry = MeetIndividualEntry | MeetRelayEntry
 
 
 class CoachEntry(BaseModel):

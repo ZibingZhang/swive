@@ -15,16 +15,17 @@ dependencies = [
     "django-import-export>=3.3.4",
 ]
 dynamic = [
-    "version"
+    "version",
 ]
 
 [project.optional-dependencies]
 dev = [
     "black>=23.12",
+    "django-stubs[compatible-mypy]>=4.2",
     "flake8>=6.1",
     "isort>=5.13",
     "pyproject-flake8>=5.0",
-    "django-stubs[compatible-mypy]>=4.2",
+    "pytest>=7.4",
 ]
 
 [project.urls]

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import re
 from enum import StrEnum
+
+SEED_REGEX = re.compile(r"^(\d*(\.\d{0,2})?|\d+:\d{2}(\.\d{0,2})?)$")
 
 
 class Event(StrEnum):
