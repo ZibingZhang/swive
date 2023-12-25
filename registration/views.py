@@ -43,7 +43,9 @@ def manage_athletes(request: HttpRequest) -> HttpResponse:
 
 @login_required
 @require_http_methods(["GET"])
-def meet_entry_form(request: HttpRequest, meet_pk, team_pk) -> HttpResponse:
+def meet_entries_for_team(
+    request: HttpRequest, meet_pk: int, team_pk: int
+) -> HttpResponse:
     _validate_request(request.user, meet_pk, team_pk)
 
     sections = []
@@ -81,7 +83,7 @@ def meet_entry_form(request: HttpRequest, meet_pk, team_pk) -> HttpResponse:
                             team_pk, prefix=f"{event.as_prefix()}-{i}"
                         )
                     )
-            sections.append({"event": event.value, "forms": forms})
+            sections.append({"event": event.value, "forms": forms, "count": 4})
         elif event in RELAY_EVENTS:
             forms = []
             for i in range(4):
@@ -102,14 +104,14 @@ def meet_entry_form(request: HttpRequest, meet_pk, team_pk) -> HttpResponse:
                             team_pk, prefix=f"{event.as_prefix()}-{i}"
                         )
                     )
-            sections.append({"event": event.value, "forms": forms})
+            sections.append({"event": event.value, "forms": forms, "count": 4})
 
-    return render(request, "meet_entry.html", {"sections": sections})
+    return render(request, "meet-entry.html", {"sections": sections})
 
 
 @login_required
 @require_http_methods(["POST"])
-def save_meet_entry_form(
+def save_meet_entries_for_team(
     request: HttpRequest, meet_pk: int, team_pk: int
 ) -> HttpResponse:
     _validate_request(request.user, meet_pk, team_pk)
@@ -135,8 +137,8 @@ def save_meet_entry_form(
             else:
                 if seed:
                     MeetAthleteIndividualEntry.objects.create(
-                        meet__pk=meet_pk,
-                        athlete_pk=int(athlete_pk),
+                        meet_id=meet_pk,
+                        athlete_id=int(athlete_pk),
                         event=event,
                         seed=Decimal(seed),
                     )

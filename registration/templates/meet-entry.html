@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% block scripts %}
+  <script src="{% static 'meet-entry.js' %}" defer></script>
+{% endblock %}
+{% block css %}
+  <link href="{% static 'meet-entry.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% load django_bootstrap5 %}
+{% block content %}
+  <div class="row">
+    <div class="col-xl-1"></div>
+    <div class="col-xl-10">
+      <form id="meet-entries" action="" method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <table class="table table-bordered border-secondary text-center">
+          <thead>
+            <tr>
+              <th scope="col" class="col-3 col-xl-3">Event</th>
+              <th scope="col" class="col-5 col-xl-6">Athlete</th>
+              <th scope="col" class="col-4 col-xl-3">Seed</th>
+            </tr>
+          </thead>
+          <tbody class="align-middle">
+            {% for section in sections %}
+              {% for form in section.forms %}
+                <tr>
+                  {% if forloop.counter0 == 0 %}
+                    <td rowspan="{{ section.count }}">{{ section.event }}</td>
+                  {% endif %}
+                  <td>
+                    {% for field in form.athlete_fields %}
+                      {% bootstrap_field field show_label=False %}
+                    {% endfor %}
+                  </td>
+                  <td>
+                    {% bootstrap_field form.seed_field show_label=False placeholder="" %}
+                  </td>
+                </tr>
+              {% endfor %}
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="text-center">
+          {% bootstrap_button button_type="submit" content="Save" %}
+        </div>
+      </form>
+    </div>
+    <div class="col-xl-1"></div>
+  </div>
+{% endblock %}

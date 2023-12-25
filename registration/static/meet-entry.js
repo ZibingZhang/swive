@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById("myForm");
+  const form = document.getElementById("meet-entries");
   function handleForm(event) {
     event.preventDefault();
     const match = location.pathname.match(/registration\/meet\/(\d+)\/team\/(\d+)\//);
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
         body: new FormData(event.target),
       }).then(function (response) {
         if (response.ok) {
-          return response.json();
+          console.log(response.json());
         }
         return Promise.reject(response);
       }).catch(error => {

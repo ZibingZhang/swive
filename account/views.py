@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
-from account.forms import ProfileCreationForm, ProfileChangeForm
+from account.forms import ProfileChangeForm, ProfileCreationForm
 
 
 @require_http_methods(["GET", "POST"])
@@ -16,7 +16,7 @@ def create_profile(request) -> HttpResponse:
             user = form.save()
             login(request, user)
             return redirect("home")
-    return render(request, "registration/create.html", {"form": form})
+    return render(request, "create.html", {"form": form})
 
 
 @require_http_methods(["GET", "POST"])
@@ -27,4 +27,4 @@ def edit_profile(request) -> HttpResponse:
         form = ProfileChangeForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
-    return render(request, "registration/edit.html", {"form": form})
+    return render(request, "edit.html", {"form": form})
