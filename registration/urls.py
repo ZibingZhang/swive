@@ -9,9 +9,4 @@ urlpatterns = [
         views.meet_entries_for_team,
         name="meet signup",
     ),
-    # path(
-    #     "meet/<int:meet_pk>/team/<int:team_pk>/save/",
-    #     views.save_meet_entries_for_team,
-    #     name="meet signup save",
-    # ),
 ]

@@ -38,7 +38,7 @@ class MeetEntryForm(BaseModelForm):
         )
 
 
-class MeetAthleteIndividualEntryForm(MeetEntryForm):
+class MeetIndividualEntryForm(MeetEntryForm):
     class Meta:
         model = MeetIndividualEntry
         exclude = ("meet", "event")
@@ -46,11 +46,17 @@ class MeetAthleteIndividualEntryForm(MeetEntryForm):
     def __init__(self, team_pk, *args, **kwargs) -> None:
         super().__init__(team_pk, *args, **kwargs)
 
+    def clean(self) -> None:
+        pass
 
-class MeetAthleteRelayEntryForm(MeetEntryForm):
+
+class MeetRelayEntryForm(MeetEntryForm):
     class Meta:
         model = MeetRelayEntry
         exclude = ("meet", "event")
 
     def __init__(self, team_pk, *args, **kwargs) -> None:
         super().__init__(team_pk, *args, **kwargs)
+
+    def clean(self) -> None:
+        pass
