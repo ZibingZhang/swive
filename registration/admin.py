@@ -36,6 +36,7 @@ class MeetIndividualEntryAdmin(BaseAdmin):
         "meet",
         "team",
         "event",
+        "order",
         "athlete",
         "seed",
     )
@@ -43,8 +44,9 @@ class MeetIndividualEntryAdmin(BaseAdmin):
         "id",
         utils.linkify_fk("meet"),
         utils.linkify_fk("team"),
-        utils.linkify_fk("athlete"),
         "event",
+        "order",
+        utils.linkify_fk("athlete"),
         "seed",
     )
 
@@ -55,6 +57,7 @@ class MeetRelayEntryAdmin(BaseAdmin):
         "meet",
         "team",
         "event",
+        "order",
         "athlete_0",
         "athlete_1",
         "athlete_2",
@@ -63,9 +66,10 @@ class MeetRelayEntryAdmin(BaseAdmin):
     )
     list_display = (
         "id",
-        "team",
-        "event",
         utils.linkify_fk("meet"),
+        utils.linkify_fk("team"),
+        "event",
+        "order",
         utils.linkify_fk("athlete_0"),
         utils.linkify_fk("athlete_1"),
         utils.linkify_fk("athlete_2"),

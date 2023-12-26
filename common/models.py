@@ -8,13 +8,21 @@ from common.constants import Event
 
 
 class BaseManager(models.Manager):
+    def __init__(self, include_deleted: bool) -> None:
+        super().__init__()
+        self.include_deleted = include_deleted
+
     def get_queryset(self) -> models.QuerySet:
-        return models.QuerySet(self.model, using=self._db).exclude(deleted=True)
+        if self.include_deleted:
+            return super().get_queryset()
+        else:
+            return super().get_queryset().filter(deleted=False)
 
 
 class BaseModel(models.Model):
     deleted = models.BooleanField(default=False, editable=False)
-    objects = BaseManager()
+    objects = BaseManager(include_deleted=False)
+    all_objects = BaseManager(include_deleted=True)
 
     class Meta:
         abstract = True
@@ -59,7 +67,7 @@ class Meet(BaseModel):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                name="start_date_before_end_date",
+                name="start date before end date",
                 check=Q(start_date__lte=F("end_date")),
             )
         ]

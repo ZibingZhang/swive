@@ -40,6 +40,7 @@ class MeetEntry(BaseModel):
     meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
     team = models.ForeignKey(Team, on_delete=models.RESTRICT)
     event = models.CharField(max_length=30, choices=EventChoice.choices)
+    order = models.PositiveIntegerField()
     seed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
 
     class Meta:
@@ -54,9 +55,9 @@ class MeetIndividualEntry(MeetEntry):
         verbose_name_plural = "Meet Individual Event Entries"
         constraints = [
             models.UniqueConstraint(
-                fields=["meet", "athlete", "event"],
+                fields=["meet", "team", "event", "order"],
                 condition=Q(deleted=False),
-                name="one entry per (meet, athlete, event)",
+                name="one individual entry per (meet, team, event, order)",
             )
         ]
 
@@ -65,8 +66,8 @@ class MeetIndividualEntry(MeetEntry):
 
     def clean(self) -> None:
         if MeetIndividualEntry.objects.filter(
-            meet=self.meet, athlete=self.athlete, event=self.event
-        ).exists():
+            meet=self.meet, team=self.team, event=self.event, order=self.order
+        ).get() != self:
             raise ValidationError(f"Entry already exists")
 
 
@@ -89,9 +90,9 @@ class MeetRelayEntry(MeetEntry):
         verbose_name_plural = "Meet Relay Event Entries"
         constraints = [
             models.UniqueConstraint(
-                fields=["meet", "athlete_0", "athlete_1", "athlete_2", "athlete_3", "event"],
+                fields=["meet", "team", "event", "order"],
                 condition=Q(deleted=False),
-                name="one entry per (meet, athlete_0, athlete_1, athlete_2, athlete_3, event)",
+                name="one relay entry per (meet, team, event, order)",
             )
         ]
 
@@ -107,13 +108,8 @@ class MeetRelayEntry(MeetEntry):
             athlete_pks.add(athlete.pk)
 
         if MeetRelayEntry.objects.filter(
-            meet=self.meet,
-            athlete_0=self.athlete_0,
-            athlete_1=self.athlete_1,
-            athlete_2=self.athlete_2,
-            athlete_3=self.athlete_3,
-            event=self.event,
-        ).exists():
+                meet=self.meet, team=self.team, event=self.event, order=self.order
+        ).get() != self:
             raise ValidationError(f"Entry already exists")
 
     def __str__(self) -> str:
