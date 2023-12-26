@@ -13,12 +13,12 @@ from registration.models import (
 
 
 @admin.register(LeagueTeamEntry)
-class LeagueTeamRegistryAdmin(BaseAdmin):
+class LeagueTeamEntryAdmin(BaseAdmin):
     list_display = ("id", utils.linkify_fk("league"), utils.linkify_fk("team"))
 
 
 @admin.register(MeetTeamEntry)
-class MeetTeamRegistryAdmin(BaseAdmin):
+class MeetTeamEntryAdmin(BaseAdmin):
     list_display = (
         "id",
         utils.linkify_fk("meet"),
@@ -31,11 +31,18 @@ class MeetTeamRegistryAdmin(BaseAdmin):
 
 
 @admin.register(MeetIndividualEntry)
-class MeetIndividualRegistryAdmin(BaseAdmin):
-    fields = ("meet", "athlete", "event", "seed")
+class MeetIndividualEntryAdmin(BaseAdmin):
+    fields = (
+        "meet",
+        "team",
+        "event",
+        "athlete",
+        "seed",
+    )
     list_display = (
         "id",
         utils.linkify_fk("meet"),
+        utils.linkify_fk("team"),
         utils.linkify_fk("athlete"),
         "event",
         "seed",
@@ -43,28 +50,30 @@ class MeetIndividualRegistryAdmin(BaseAdmin):
 
 
 @admin.register(MeetRelayEntry)
-class MeetRelayRegistryAdmin(BaseAdmin):
+class MeetRelayEntryAdmin(BaseAdmin):
     fields = (
         "meet",
+        "team",
+        "event",
+        "athlete_0",
         "athlete_1",
         "athlete_2",
         "athlete_3",
-        "athlete_4",
-        "event",
         "seed",
     )
     list_display = (
         "id",
+        "team",
+        "event",
         utils.linkify_fk("meet"),
+        utils.linkify_fk("athlete_0"),
         utils.linkify_fk("athlete_1"),
         utils.linkify_fk("athlete_2"),
         utils.linkify_fk("athlete_3"),
-        utils.linkify_fk("athlete_4"),
-        "event",
         "seed",
     )
 
 
 @admin.register(CoachEntry)
-class CoachRegistryAdmin(BaseAdmin):
+class CoachEntryAdmin(BaseAdmin):
     list_display = ("id", utils.linkify_fk("team"), utils.linkify_fk("profile"))

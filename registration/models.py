@@ -38,6 +38,7 @@ class MeetTeamEntry(BaseModel):
 
 class MeetEntry(BaseModel):
     meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
+    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
     event = models.CharField(max_length=30, choices=EventChoice.choices)
     seed = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
 
@@ -70,16 +71,16 @@ class MeetIndividualEntry(MeetEntry):
 
 
 class MeetRelayEntry(MeetEntry):
-    athlete_1 = models.ForeignKey(
+    athlete_0 = models.ForeignKey(
         Athlete, on_delete=models.RESTRICT, related_name="meetrelayentry_set1"
     )
-    athlete_2 = models.ForeignKey(
+    athlete_1 = models.ForeignKey(
         Athlete, on_delete=models.RESTRICT, related_name="meetrelayentry_set2"
     )
-    athlete_3 = models.ForeignKey(
+    athlete_2 = models.ForeignKey(
         Athlete, on_delete=models.RESTRICT, related_name="meetrelayentry_set3"
     )
-    athlete_4 = models.ForeignKey(
+    athlete_3 = models.ForeignKey(
         Athlete, on_delete=models.RESTRICT, related_name="meetrelayentry_set4"
     )
 
@@ -88,15 +89,15 @@ class MeetRelayEntry(MeetEntry):
         verbose_name_plural = "Meet Relay Event Entries"
         constraints = [
             models.UniqueConstraint(
-                fields=["meet", "athlete_1", "athlete_2", "athlete_3", "athlete_4", "event"],
+                fields=["meet", "athlete_0", "athlete_1", "athlete_2", "athlete_3", "event"],
                 condition=Q(deleted=False),
-                name="one entry per (meet, athlete_1, athlete_2, athlete_3, athlete_4, event)",
+                name="one entry per (meet, athlete_0, athlete_1, athlete_2, athlete_3, event)",
             )
         ]
 
     @property
     def athletes(self) -> list[Athlete]:
-        return [self.athlete_1, self.athlete_2, self.athlete_3, self.athlete_4]
+        return [self.athlete_0, self.athlete_1, self.athlete_2, self.athlete_3]
 
     def clean(self) -> None:
         athlete_pks = set()
@@ -107,10 +108,10 @@ class MeetRelayEntry(MeetEntry):
 
         if MeetRelayEntry.objects.filter(
             meet=self.meet,
+            athlete_0=self.athlete_0,
             athlete_1=self.athlete_1,
             athlete_2=self.athlete_2,
             athlete_3=self.athlete_3,
-            athlete_4=self.athlete_4,
             event=self.event,
         ).exists():
             raise ValidationError(f"Entry already exists")

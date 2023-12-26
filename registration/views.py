@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import Http404, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
 from common.constants import EVENT_ORDER, INDIVIDUAL_EVENTS, RELAY_EVENTS
@@ -70,13 +70,15 @@ def meet_entries_for_team(
                 athlete_pks = (entry.athlete.pk,)
             elif isinstance(entry, MeetRelayEntry):
                 athlete_pks = (
+                    entry.athlete_0.pk,
                     entry.athlete_1.pk,
                     entry.athlete_2.pk,
                     entry.athlete_3.pk,
-                    entry.athlete_4.pk,
                 )
             entries_by_event_by_athlete_pks[entry.event][athlete_pks] = entry
-        _update_entries(meet_pk, sections, entries_by_event_by_athlete_pks)
+        _update_entries(meet_pk, team_pk, sections, entries_by_event_by_athlete_pks)
+        if not any(form.errors for section in sections for form in section["forms"]):
+            return redirect("meet entries", meet_pk=meet_pk, team_pk=team_pk)
 
     return render(request, "meet-entry.html", {"sections": sections})
 
@@ -200,10 +202,10 @@ def _build_relay_event_entry_form(
     try:
         entry = entries_for_event[index]
         initial = {
+            "athlete_0": entry.athlete_0.pk,
             "athlete_1": entry.athlete_1.pk,
             "athlete_2": entry.athlete_2.pk,
             "athlete_3": entry.athlete_3.pk,
-            "athlete_4": entry.athlete_4.pk,
             "seed": entry.seed,
         }
     except IndexError:
@@ -217,6 +219,7 @@ def _build_relay_event_entry_form(
 
 def _update_entries(
     meet_pk: int,
+    team_pk: int,
     sections: list[Section],
     entries_by_event_by_athlete_pks: dict[Event, dict[tuple[int, ...]], MeetEntry],
 ) -> None:
@@ -229,10 +232,10 @@ def _update_entries(
                 athlete_pks = (form.cleaned_data.get("athlete"),)
             elif event in RELAY_EVENTS:
                 athlete_pks = (
+                    form.cleaned_data.get("athlete_0"),
                     form.cleaned_data.get("athlete_1"),
                     form.cleaned_data.get("athlete_2"),
                     form.cleaned_data.get("athlete_3"),
-                    form.cleaned_data.get("athlete_4"),
                 )
             if any(athlete_pk is None for athlete_pk in athlete_pks):
                 continue
@@ -248,6 +251,7 @@ def _update_entries(
                 if event in INDIVIDUAL_EVENTS:
                     entry = MeetIndividualEntry(
                         meet_id=meet_pk,
+                        team_id=team_pk,
                         athlete_id=athlete_pks[0],
                         event=event,
                         seed=seed,
@@ -260,10 +264,11 @@ def _update_entries(
                 elif event in RELAY_EVENTS:
                     entry = MeetRelayEntry(
                         meet_id=meet_pk,
-                        athlete_1_id=athlete_pks[0],
-                        athlete_2_id=athlete_pks[1],
-                        athlete_3_id=athlete_pks[2],
-                        athlete_4_id=athlete_pks[3],
+                        team_id=team_pk,
+                        athlete_0_id=athlete_pks[0],
+                        athlete_1_id=athlete_pks[1],
+                        athlete_2_id=athlete_pks[2],
+                        athlete_3_id=athlete_pks[3],
                         event=event,
                         seed=seed,
                     )

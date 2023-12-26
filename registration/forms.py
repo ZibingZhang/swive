@@ -51,6 +51,9 @@ class MeetIndividualEntryForm(MeetEntryForm):
 
 
 class MeetRelayEntryForm(MeetEntryForm):
+    athlete_0 = forms.TypedChoiceField(
+        choices=[("", "")], required=False, coerce=int, empty_value=None
+    )
     athlete_1 = forms.TypedChoiceField(
         choices=[("", "")], required=False, coerce=int, empty_value=None
     )
@@ -60,12 +63,12 @@ class MeetRelayEntryForm(MeetEntryForm):
     athlete_3 = forms.TypedChoiceField(
         choices=[("", "")], required=False, coerce=int, empty_value=None
     )
-    athlete_4 = forms.TypedChoiceField(
-        choices=[("", "")], required=False, coerce=int, empty_value=None
-    )
 
     def __init__(self, athlete_choices: list[Athlete], *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.fields["athlete_0"].choices += [
+            (athlete.pk, athlete) for athlete in athlete_choices
+        ]
         self.fields["athlete_1"].choices += [
             (athlete.pk, athlete) for athlete in athlete_choices
         ]
@@ -73,8 +76,5 @@ class MeetRelayEntryForm(MeetEntryForm):
             (athlete.pk, athlete) for athlete in athlete_choices
         ]
         self.fields["athlete_3"].choices += [
-            (athlete.pk, athlete) for athlete in athlete_choices
-        ]
-        self.fields["athlete_4"].choices += [
             (athlete.pk, athlete) for athlete in athlete_choices
         ]
