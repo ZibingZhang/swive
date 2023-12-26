@@ -35,6 +35,7 @@
                     {% for field in form.athlete_fields %}
                       {% bootstrap_field field show_label=False %}
                     {% endfor %}
+                    {{ form.non_field_errors }}
                   </td>
                   <td>
                     {% bootstrap_field form.seed_field show_label=False placeholder="" %}

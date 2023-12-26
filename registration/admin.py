@@ -24,14 +24,15 @@ class MeetTeamRegistryAdmin(BaseAdmin):
         utils.linkify_fk("meet"),
         utils.linkify_fk("team"),
         lambda entry: format_html(
-            '<a href="{}">Edit meet entries</a>',
+            '<a href="{}" target="_blank">Edit meet entries</a>',
             f"/registration/meet/{entry.meet.pk}/team/{entry.team.pk}",
         ),
     )
 
 
 @admin.register(MeetIndividualEntry)
-class MeetAthleteIndividualRegistryAdmin(BaseAdmin):
+class MeetIndividualRegistryAdmin(BaseAdmin):
+    fields = ("meet", "athlete", "event", "seed")
     list_display = (
         "id",
         utils.linkify_fk("meet"),
@@ -42,7 +43,16 @@ class MeetAthleteIndividualRegistryAdmin(BaseAdmin):
 
 
 @admin.register(MeetRelayEntry)
-class MeetAthleteRelayRegistryAdmin(BaseAdmin):
+class MeetRelayRegistryAdmin(BaseAdmin):
+    fields = (
+        "meet",
+        "athlete_1",
+        "athlete_2",
+        "athlete_3",
+        "athlete_4",
+        "event",
+        "seed",
+    )
     list_display = (
         "id",
         utils.linkify_fk("meet"),

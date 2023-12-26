@@ -5,14 +5,13 @@ from collections import defaultdict
 from typing import TYPE_CHECKING
 
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from common.constants import EVENT_ORDER, INDIVIDUAL_EVENTS, RELAY_EVENTS
 from common.models import Meet, Team
-from common.utils import is_seed, seed_to_decimal
 from registration.constants import ENTRIES_PER_EVENT
 from registration.forms import AthleteForm, MeetIndividualEntryForm, MeetRelayEntryForm
 from registration.models import (
@@ -59,24 +58,47 @@ def meet_entries_for_team(
     athlete_choices = list(Athlete.objects.filter(team__pk=team_pk))
 
     sections = []
-    entries_by_event = _query_entries_by_event(meet_pk, team_pk)
-    if request.method == "POST":
-        entries_by_event_athlete_pk = {}
-        for entry in itertools.chain.from_iterable(entries_by_event.values()):
-            if isinstance(entry, MeetIndividualEntry):
-                entries_by_event_athlete_pk[
-                    (entry.event, str(entry.athlete.pk))
-                ] = entry
-        _update_entries(entries_by_event_athlete_pk, meet_pk, request.POST)
+    entries_by_event = _read_entries_by_event(meet_pk, team_pk)
     for event in EVENT_ORDER:
         sections.append(
-            _build_event_section(request, athlete_choices, entries_by_event, event)
+            _build_event_section(request, event, entries_by_event, athlete_choices)
         )
+    if request.method == "POST":
+        entries_by_event_by_athlete_pks = defaultdict(lambda: {})
+        for entry in itertools.chain.from_iterable(entries_by_event.values()):
+            if isinstance(entry, MeetIndividualEntry):
+                athlete_pks = (entry.athlete.pk,)
+            elif isinstance(entry, MeetRelayEntry):
+                athlete_pks = (
+                    entry.athlete_1.pk,
+                    entry.athlete_2.pk,
+                    entry.athlete_3.pk,
+                    entry.athlete_4.pk,
+                )
+            entries_by_event_by_athlete_pks[entry.event][athlete_pks] = entry
+        _update_entries(meet_pk, sections, entries_by_event_by_athlete_pks)
 
     return render(request, "meet-entry.html", {"sections": sections})
 
 
-def _query_entries_by_event(meet_pk: int, team_pk: int) -> dict[Event, list[MeetEntry]]:
+def _validate_request(user: Profile, meet_pk: int, team_pk: int) -> None:
+    if not Meet.objects.filter(pk=meet_pk).exists():
+        raise Http404("Meet not found")
+    if not Team.objects.filter(pk=team_pk).exists():
+        raise Http404("Team not found")
+    if not MeetTeamEntry.objects.filter(meet__pk=meet_pk, team__pk=team_pk).exists():
+        raise Http404("Team not registered to meet")
+
+    if user.is_superuser:
+        return
+    team_pks = CoachEntry.objects.filter(profile=user).values_list(
+        "team__pk", flat=True
+    )
+    if team_pk not in team_pks:
+        raise PermissionDenied("User is not registered to the team")
+
+
+def _read_entries_by_event(meet_pk: int, team_pk: int) -> dict[Event, list[MeetEntry]]:
     entries_by_event = defaultdict(lambda: [])
     for individual_entry in MeetIndividualEntry.objects.filter(
         meet__pk=meet_pk, athlete__team__pk=team_pk
@@ -89,69 +111,31 @@ def _query_entries_by_event(meet_pk: int, team_pk: int) -> dict[Event, list[Meet
     return entries_by_event
 
 
-def _update_entries(
-    entries_by_event_athlete_pk: dict[tuple[Event, int], MeetEntry],
-    meet_pk: int,
-    body: dict,
-) -> None:
-    errors = []
-    for event in INDIVIDUAL_EVENTS:
-        for i in range(ENTRIES_PER_EVENT):
-            try:
-                athlete_pk_value = body[f"{event.as_prefix()}-{i}-athlete"]
-                seed_value = body[f"{event.as_prefix()}-{i}-seed"]
-            except KeyError:
-                continue
-            if athlete_pk_value == "":
-                if seed_value != "":
-                    errors.append("Missing athlete")
-                continue
-            try:
-                athlete_pk = int(athlete_pk_value)
-            except ValueError:
-                continue
-            if seed_value != "" and not is_seed(seed_value):
-                errors.append("Invalid seed")
-                continue
-            seed = None if seed_value == "" else seed_to_decimal(seed_value)
-            entry = entries_by_event_athlete_pk.get((event, athlete_pk))
-            if entry:
-                entry.seed = seed
-                entry.save()
-                entries_by_event_athlete_pk.pop((event, athlete_pk))
-            else:
-                MeetIndividualEntry.objects.create(
-                    meet_id=meet_pk, athlete_id=int(athlete_pk), event=event, seed=seed
-                )
-    for entry in entries_by_event_athlete_pk.values():
-        entry.delete()
-
-
 def _build_event_section(
     request: HttpRequest,
-    athlete_choices: list[Athlete],
-    entries_by_event: dict[Event, list[MeetEntry]],
     event: Event,
+    entries_by_event: dict[Event, list[MeetEntry]],
+    athlete_choices: list[Athlete],
 ) -> Section:
     if event in INDIVIDUAL_EVENTS:
         return _build_individual_event_section(
-            request, athlete_choices, entries_by_event[event], event
+            request, event, entries_by_event[event], athlete_choices
         )
     elif event in RELAY_EVENTS:
         return _build_relay_event_section(
-            request, athlete_choices, entries_by_event[event], event
+            request, event, entries_by_event[event], athlete_choices
         )
 
 
 def _build_individual_event_section(
     request: HttpRequest,
-    athlete_choices: list[Athlete],
-    entries_for_event: list[MeetIndividualEntry],
     event: Event,
+    entries_for_event: list[MeetIndividualEntry],
+    athlete_choices: list[Athlete],
 ) -> Section:
     forms = [
         _build_individual_event_entry_form(
-            request, athlete_choices, entries_for_event, event, index
+            request, event, entries_for_event, athlete_choices, index
         )
         for index in range(ENTRIES_PER_EVENT)
     ]
@@ -160,16 +144,15 @@ def _build_individual_event_section(
 
 def _build_individual_event_entry_form(
     request: HttpRequest,
-    athlete_choices: list[Athlete],
-    entries_for_event: list[MeetIndividualEntry],
     event: Event,
+    entries_for_event: list[MeetIndividualEntry],
+    athlete_choices: list[Athlete],
     index: int,
 ) -> MeetIndividualEntryForm:
     prefix = f"{event.as_prefix()}-{index}"
 
     if request.method == "POST":
-        form = MeetIndividualEntryForm(athlete_choices, request.POST, prefix=prefix)
-        return form
+        return MeetIndividualEntryForm(athlete_choices, request.POST, prefix=prefix)
 
     try:
         entry = entries_for_event[index]
@@ -189,13 +172,13 @@ def _build_individual_event_entry_form(
 
 def _build_relay_event_section(
     request: HttpRequest,
-    athlete_choices: list[Athlete],
-    entries_for_event: list[MeetRelayEntry],
     event: Event,
+    entries_for_event: list[MeetRelayEntry],
+    athlete_choices: list[Athlete],
 ) -> Section:
     forms = [
         _build_relay_event_entry_form(
-            request, athlete_choices, entries_for_event, event, index
+            request, event, entries_for_event, athlete_choices, index
         )
         for index in range(ENTRIES_PER_EVENT)
     ]
@@ -204,20 +187,15 @@ def _build_relay_event_section(
 
 def _build_relay_event_entry_form(
     request: HttpRequest,
-    athlete_choices: list[Athlete],
-    entries_for_event: list[MeetRelayEntry],
     event: Event,
+    entries_for_event: list[MeetRelayEntry],
+    athlete_choices: list[Athlete],
     index: int,
 ) -> MeetRelayEntryForm:
     prefix = f"{event.as_prefix()}-{index}"
 
     if request.method == "POST":
-        form = MeetRelayEntryForm(athlete_choices, request.POST, prefix=prefix)
-        try:
-            if form.is_valid():
-                return form
-        except AttributeError:
-            pass
+        return MeetRelayEntryForm(athlete_choices, request.POST, prefix=prefix)
 
     try:
         entry = entries_for_event[index]
@@ -237,18 +215,66 @@ def _build_relay_event_entry_form(
     )
 
 
-def _validate_request(user: Profile, meet_pk: int, team_pk: int) -> None:
-    if not Meet.objects.filter(pk=meet_pk).exists():
-        raise Http404("Meet not found")
-    if not Team.objects.filter(pk=team_pk).exists():
-        raise Http404("Team not found")
-    if not MeetTeamEntry.objects.filter(meet__pk=meet_pk, team__pk=team_pk).exists():
-        raise Http404("Team not registered to meet")
+def _update_entries(
+    meet_pk: int,
+    sections: list[Section],
+    entries_by_event_by_athlete_pks: dict[Event, dict[tuple[int, ...]], MeetEntry],
+) -> None:
+    for section in sections:
+        event = section["event"]
+        for form in section["forms"]:
+            form.full_clean()
 
-    if user.is_superuser:
-        return
-    team_pks = CoachEntry.objects.filter(profile=user).values_list(
-        "team__pk", flat=True
-    )
-    if team_pk not in team_pks:
-        raise PermissionDenied("User is not registered to the team")
+            if event in INDIVIDUAL_EVENTS:
+                athlete_pks = (form.cleaned_data.get("athlete"),)
+            elif event in RELAY_EVENTS:
+                athlete_pks = (
+                    form.cleaned_data.get("athlete_1"),
+                    form.cleaned_data.get("athlete_2"),
+                    form.cleaned_data.get("athlete_3"),
+                    form.cleaned_data.get("athlete_4"),
+                )
+            if any(athlete_pk is None for athlete_pk in athlete_pks):
+                continue
+
+            current_entry = entries_by_event_by_athlete_pks[event].get(athlete_pks)
+            seed = form.cleaned_data.get("seed")
+
+            if current_entry:
+                current_entry.seed = seed
+                current_entry.save()
+                entries_by_event_by_athlete_pks[event].pop(athlete_pks)
+            else:
+                if event in INDIVIDUAL_EVENTS:
+                    entry = MeetIndividualEntry(
+                        meet_id=meet_pk,
+                        athlete_id=athlete_pks[0],
+                        event=event,
+                        seed=seed,
+                    )
+                    try:
+                        entry.full_clean()
+                        entry.save()
+                    except ValidationError as e:
+                        form.add_error(None, e)
+                elif event in RELAY_EVENTS:
+                    entry = MeetRelayEntry(
+                        meet_id=meet_pk,
+                        athlete_1_id=athlete_pks[0],
+                        athlete_2_id=athlete_pks[1],
+                        athlete_3_id=athlete_pks[2],
+                        athlete_4_id=athlete_pks[3],
+                        event=event,
+                        seed=seed,
+                    )
+                    try:
+                        entry.full_clean()
+                        entry.save()
+                    except ValidationError as e:
+                        form.add_error(None, e)
+
+    for entry in itertools.chain.from_iterable(
+        entries_by_athlete_pks.values()
+        for entries_by_athlete_pks in entries_by_event_by_athlete_pks.values()
+    ):
+        entry.delete()

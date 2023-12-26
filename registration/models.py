@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import abc
-
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 
 from account.models import Profile
 from common.models import Athlete, BaseModel, EventChoice, League, Meet, Team
@@ -13,7 +12,7 @@ class LeagueTeamEntry(BaseModel):
     league = models.ForeignKey(League, on_delete=models.RESTRICT)
     team = models.ForeignKey(Team, on_delete=models.RESTRICT)
 
-    class Meta(BaseModel.Meta):
+    class Meta:
         verbose_name = "League Team Entry"
         verbose_name_plural = "League Team Entries"
 
@@ -25,7 +24,7 @@ class MeetTeamEntry(BaseModel):
     meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
     team = models.ForeignKey(Team, on_delete=models.RESTRICT)
 
-    class Meta(BaseModel.Meta):
+    class Meta:
         verbose_name = "Meet Team Entry"
         verbose_name_plural = "Meet Team Entries"
 
@@ -49,12 +48,25 @@ class MeetEntry(BaseModel):
 class MeetIndividualEntry(MeetEntry):
     athlete = models.ForeignKey(Athlete, on_delete=models.RESTRICT)
 
-    class Meta(BaseModel.Meta):
+    class Meta:
         verbose_name = "Individual Entry"
         verbose_name_plural = "Meet Individual Event Entries"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["meet", "athlete", "event"],
+                condition=Q(deleted=False),
+                name="one entry per (meet, athlete, event)",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.meet} - {self.athlete} - {self.event} - {self.seed}"
+
+    def clean(self) -> None:
+        if MeetIndividualEntry.objects.filter(
+            meet=self.meet, athlete=self.athlete, event=self.event
+        ).exists():
+            raise ValidationError(f"Entry already exists")
 
 
 class MeetRelayEntry(MeetEntry):
@@ -71,9 +83,16 @@ class MeetRelayEntry(MeetEntry):
         Athlete, on_delete=models.RESTRICT, related_name="meetrelayentry_set4"
     )
 
-    class Meta(BaseModel.Meta):
+    class Meta:
         verbose_name = "Relay Entry"
         verbose_name_plural = "Meet Relay Event Entries"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["meet", "athlete_1", "athlete_2", "athlete_3", "athlete_4", "event"],
+                condition=Q(deleted=False),
+                name="one entry per (meet, athlete_1, athlete_2, athlete_3, athlete_4, event)",
+            )
+        ]
 
     @property
     def athletes(self) -> list[Athlete]:
@@ -86,6 +105,16 @@ class MeetRelayEntry(MeetEntry):
                 raise ValidationError(f"Duplicate athlete {athlete}")
             athlete_pks.add(athlete.pk)
 
+        if MeetRelayEntry.objects.filter(
+            meet=self.meet,
+            athlete_1=self.athlete_1,
+            athlete_2=self.athlete_2,
+            athlete_3=self.athlete_3,
+            athlete_4=self.athlete_4,
+            event=self.event,
+        ).exists():
+            raise ValidationError(f"Entry already exists")
+
     def __str__(self) -> str:
         return f"{self.meet} - {self.athletes} - {self.event} - {self.seed}"
 
@@ -94,7 +123,7 @@ class CoachEntry(BaseModel):
     team = models.ForeignKey(Team, on_delete=models.RESTRICT)
     profile = models.ForeignKey(Profile, on_delete=models.RESTRICT)
 
-    class Meta(BaseModel.Meta):
+    class Meta:
         verbose_name = "Coach Entry"
         verbose_name_plural = "Coach Entries"
 
