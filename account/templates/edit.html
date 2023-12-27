@@ -7,8 +7,14 @@
   {% if user.is_authenticated %}
     <form method="post">
       {% csrf_token %}
-      {% bootstrap_form form %}
-      {% bootstrap_button button_type="submit" content="Save Account" %}
+      {% bootstrap_form profile_change_form %}
+      {% bootstrap_button button_type="submit" content="Save" %}
+    </form>
+    <br><br>
+    <form method="post">
+      {% csrf_token %}
+      {% bootstrap_form password_change_form %}
+      {% bootstrap_button button_type="submit" content="Change Password" %}
     </form>
   {% else %}
     You must be logged in to change your account.

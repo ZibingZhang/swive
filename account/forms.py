@@ -10,6 +10,11 @@ class ProfileCreationForm(UserCreationForm):
 
 
 class ProfileChangeForm(UserChangeForm):
+    # ...
     class Meta:
         model = Profile
-        fields = ("first_name", "last_name", "email", "username", "password")
+        fields = ("first_name", "last_name", "email", "username")
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        del self.fields["password"]
