@@ -14,7 +14,6 @@ from common.constants import EVENT_ORDER, INDIVIDUAL_EVENTS, RELAY_EVENTS
 from common.models import Meet, Team
 from registration.constants import ENTRIES_PER_EVENT
 from registration.forms import (
-    AthleteForm,
     MeetEntryForm,
     MeetIndividualEntryForm,
     MeetRelayEntryForm,
@@ -41,16 +40,6 @@ class Section(TypedDict):
     event: Event
     count: int
     forms: list[MeetEntryForm]
-
-
-@login_required
-@require_http_methods(["GET"])
-def manage_athletes(request: HttpRequest) -> HttpResponse:
-    return render(
-        request,
-        "athletes.html",
-        {"form": AthleteForm(), "athletes": Athlete.objects.filter()},
-    )
 
 
 @login_required
@@ -222,7 +211,9 @@ def _update_entry(event: Event, entry: MeetEntry, form: MeetEntryForm) -> None:
     entry.save()
 
 
-def _create_entry(meet_pk: int, team_pk: int, event: Event, index: int, form: MeetEntryForm) -> MeetEntry:
+def _create_entry(
+    meet_pk: int, team_pk: int, event: Event, index: int, form: MeetEntryForm
+) -> MeetEntry:
     if event in INDIVIDUAL_EVENTS:
         return MeetIndividualEntry(
             meet_id=meet_pk,
