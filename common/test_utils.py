@@ -11,12 +11,12 @@ def test_str_is_seed():
     assert is_seed(".12")
     assert is_seed(".1")
     assert is_seed("12.")
-    assert is_seed(".")
     assert is_seed("1:23.45")
     assert is_seed("123:45.67")
 
 
 def test_str_is_not_seed():
+    assert not is_seed(".")
     assert not is_seed("12.345")
     assert not is_seed("1:2.34")
     assert not is_seed("1:234.45")
@@ -32,6 +32,5 @@ def test_seed_to_decimal():
     assert seed_to_decimal(".12") == Decimal(".12")
     assert seed_to_decimal(".1") == Decimal(".1")
     assert seed_to_decimal("12.") == Decimal(12)
-    assert seed_to_decimal(".") == Decimal(0)
     assert seed_to_decimal("1:23.45") == Decimal("83.45")
     assert seed_to_decimal("123:45.67") == Decimal("7425.67")

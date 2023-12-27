@@ -31,6 +31,12 @@
                   {% if forloop.counter0 == 0 %}
                     <td rowspan="{{ section.count }}">{{ section.event }}</td>
                   {% endif %}
+                  <td class="d-none">
+                    {% for hidden_field in form.hidden_fields %}
+                      {{ hidden_field.errors }}
+                      {{ hidden_field }}
+                    {% endfor %}
+                  </td>
                   <td>
                     {% for field in form.athlete_fields %}
                       {% bootstrap_field field show_label=False %}

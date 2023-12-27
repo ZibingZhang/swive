@@ -46,6 +46,13 @@ class MeetEntry(BaseModel):
     class Meta:
         abstract = True
 
+    def clean(self) -> None:
+        qs = type(self).objects.filter(
+            meet=self.meet, team=self.team, event=self.event, order=self.order
+        )
+        if qs.exists() and qs.get() != self:
+            raise ValidationError(f"Entry already exists")
+
 
 class MeetIndividualEntry(MeetEntry):
     athlete = models.ForeignKey(Athlete, on_delete=models.RESTRICT)
@@ -62,13 +69,10 @@ class MeetIndividualEntry(MeetEntry):
         ]
 
     def __str__(self) -> str:
-        return f"{self.meet} - {self.athlete} - {self.event} - {self.seed}"
+        return f"{self.meet} - {self.team} - {self.event} - {self.order} - {self.athlete} - {self.seed}"
 
     def clean(self) -> None:
-        if MeetIndividualEntry.objects.filter(
-            meet=self.meet, team=self.team, event=self.event, order=self.order
-        ).get() != self:
-            raise ValidationError(f"Entry already exists")
+        super().clean()
 
 
 class MeetRelayEntry(MeetEntry):
@@ -101,19 +105,17 @@ class MeetRelayEntry(MeetEntry):
         return [self.athlete_0, self.athlete_1, self.athlete_2, self.athlete_3]
 
     def clean(self) -> None:
+        super().clean()
         athlete_pks = set()
         for athlete in self.athletes:
             if athlete.pk in athlete_pks:
                 raise ValidationError(f"Duplicate athlete {athlete}")
             athlete_pks.add(athlete.pk)
 
-        if MeetRelayEntry.objects.filter(
-                meet=self.meet, team=self.team, event=self.event, order=self.order
-        ).get() != self:
-            raise ValidationError(f"Entry already exists")
-
     def __str__(self) -> str:
-        return f"{self.meet} - {self.athletes} - {self.event} - {self.seed}"
+        return (
+            f"{self.meet} - {self.team} - {self.event} - {self.order} - {self.athletes}"
+        )
 
 
 class CoachEntry(BaseModel):

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from django import forms
 
-from common.constants import Event
 from common.forms import BaseForm, BaseModelForm
 from common.utils import is_seed
 from registration.models import Athlete
@@ -15,6 +14,7 @@ class AthleteForm(BaseModelForm):
 
 
 class MeetEntryForm(BaseForm):
+    order = forms.IntegerField(min_value=0, widget=forms.HiddenInput())
     seed = forms.CharField(max_length=10, required=False, empty_value=None)
 
     def __init__(self, *args, **kwargs) -> None:

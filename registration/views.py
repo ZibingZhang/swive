@@ -13,7 +13,12 @@ from django.views.decorators.http import require_http_methods
 from common.constants import EVENT_ORDER, INDIVIDUAL_EVENTS, RELAY_EVENTS
 from common.models import Meet, Team
 from registration.constants import ENTRIES_PER_EVENT
-from registration.forms import AthleteForm, MeetIndividualEntryForm, MeetRelayEntryForm
+from registration.forms import (
+    AthleteForm,
+    MeetEntryForm,
+    MeetIndividualEntryForm,
+    MeetRelayEntryForm,
+)
 from registration.models import (
     Athlete,
     CoachEntry,
@@ -27,7 +32,6 @@ if TYPE_CHECKING:
 
     from account.models import Profile
     from common.constants import Event
-    from common.forms import BaseForm
     from registration.models import MeetEntry
 
 from typing import TypedDict
@@ -36,7 +40,7 @@ from typing import TypedDict
 class Section(TypedDict):
     event: Event
     count: int
-    forms: list[BaseForm]
+    forms: list[MeetEntryForm]
 
 
 @login_required
@@ -58,25 +62,15 @@ def meet_entries_for_team(
     athlete_choices = list(Athlete.objects.filter(team__pk=team_pk))
 
     sections = []
-    entries_by_event = _read_entries_by_event(meet_pk, team_pk)
+    entries_by_event_by_order = _read_entries_by_event_by_order(meet_pk, team_pk)
     for event in EVENT_ORDER:
         sections.append(
-            _build_event_section(request, event, entries_by_event, athlete_choices)
+            _build_event_section(
+                request, event, entries_by_event_by_order[event], athlete_choices
+            )
         )
     if request.method == "POST":
-        entries_by_event_by_athlete_pks = defaultdict(lambda: {})
-        for entry in itertools.chain.from_iterable(entries_by_event.values()):
-            if isinstance(entry, MeetIndividualEntry):
-                athlete_pks = (entry.athlete.pk,)
-            elif isinstance(entry, MeetRelayEntry):
-                athlete_pks = (
-                    entry.athlete_0.pk,
-                    entry.athlete_1.pk,
-                    entry.athlete_2.pk,
-                    entry.athlete_3.pk,
-                )
-            entries_by_event_by_athlete_pks[entry.event][athlete_pks] = entry
-        _update_entries(meet_pk, team_pk, sections, entries_by_event_by_athlete_pks)
+        _update_entries(meet_pk, team_pk, sections, entries_by_event_by_order)
         if not any(form.errors for section in sections for form in section["forms"]):
             return redirect("meet entries", meet_pk=meet_pk, team_pk=team_pk)
 
@@ -100,186 +94,153 @@ def _validate_request(user: Profile, meet_pk: int, team_pk: int) -> None:
         raise PermissionDenied("User is not registered to the team")
 
 
-def _read_entries_by_event(meet_pk: int, team_pk: int) -> dict[Event, list[MeetEntry]]:
-    entries_by_event = defaultdict(lambda: [])
-    for individual_entry in MeetIndividualEntry.objects.filter(
-        meet__pk=meet_pk, athlete__team__pk=team_pk
+def _read_entries_by_event_by_order(
+    meet_pk: int, team_pk: int
+) -> dict[Event, dict[int, MeetEntry]]:
+    entries_by_event_by_order = defaultdict(lambda: {})
+    for entry in itertools.chain(
+        MeetIndividualEntry.objects.filter(meet__pk=meet_pk, team__pk=team_pk),
+        MeetRelayEntry.objects.filter(meet__pk=meet_pk, team__pk=team_pk),
     ):
-        entries_by_event[individual_entry.event].append(individual_entry)
-    for relay_entry in MeetRelayEntry.objects.filter(
-        meet__pk=meet_pk, athlete_1__team__pk=team_pk
-    ):
-        entries_by_event[relay_entry.event].append(relay_entry)
-    return entries_by_event
+        entries_by_event_by_order[entry.event][entry.order] = entry
+    return entries_by_event_by_order
 
 
 def _build_event_section(
     request: HttpRequest,
     event: Event,
-    entries_by_event: dict[Event, list[MeetEntry]],
+    entries_by_order: dict[int, MeetEntry],
     athlete_choices: list[Athlete],
 ) -> Section:
+    forms = [
+        _build_event_entry_form(
+            request, event, entries_by_order, athlete_choices, index
+        )
+        for index in range(ENTRIES_PER_EVENT)
+    ]
+    return {"event": event, "forms": forms, "count": ENTRIES_PER_EVENT}
+
+
+def _build_event_entry_form(
+    request: HttpRequest,
+    event: Event,
+    entries_by_order: dict[int, MeetEntry],
+    athlete_choices: list[Athlete],
+    index: int,
+) -> MeetEntryForm:
+    prefix = f"{event.as_prefix()}-{index}"
+
     if event in INDIVIDUAL_EVENTS:
-        return _build_individual_event_section(
-            request, event, entries_by_event[event], athlete_choices
+        form_class = MeetIndividualEntryForm
+    elif event in RELAY_EVENTS:
+        form_class = MeetRelayEntryForm
+
+    if request.method == "POST":
+        return form_class(athlete_choices, request.POST, prefix=prefix)
+
+    initial = {"order": index}
+    if index not in entries_by_order:
+        return form_class(athlete_choices, prefix=prefix, initial=initial)
+
+    entry = entries_by_order[index]
+    if event in INDIVIDUAL_EVENTS:
+        initial.update(
+            {
+                "athlete": entry.athlete.pk,
+                "seed": entry.seed,
+            }
         )
     elif event in RELAY_EVENTS:
-        return _build_relay_event_section(
-            request, event, entries_by_event[event], athlete_choices
+        initial.update(
+            {
+                "athlete_0": entry.athlete_0.pk,
+                "athlete_1": entry.athlete_1.pk,
+                "athlete_2": entry.athlete_2.pk,
+                "athlete_3": entry.athlete_3.pk,
+                "seed": entry.seed,
+            }
         )
 
-
-def _build_individual_event_section(
-    request: HttpRequest,
-    event: Event,
-    entries_for_event: list[MeetIndividualEntry],
-    athlete_choices: list[Athlete],
-) -> Section:
-    forms = [
-        _build_individual_event_entry_form(
-            request, event, entries_for_event, athlete_choices, index
-        )
-        for index in range(ENTRIES_PER_EVENT)
-    ]
-    return {"event": event, "forms": forms, "count": ENTRIES_PER_EVENT}
-
-
-def _build_individual_event_entry_form(
-    request: HttpRequest,
-    event: Event,
-    entries_for_event: list[MeetIndividualEntry],
-    athlete_choices: list[Athlete],
-    index: int,
-) -> MeetIndividualEntryForm:
-    prefix = f"{event.as_prefix()}-{index}"
-
-    if request.method == "POST":
-        return MeetIndividualEntryForm(athlete_choices, request.POST, prefix=prefix)
-
-    try:
-        entry = entries_for_event[index]
-        initial = {
-            "athlete": entry.athlete.pk,
-            "seed": entry.seed,
-        }
-    except IndexError:
-        initial = {}
-
-    return MeetIndividualEntryForm(
-        athlete_choices,
-        prefix=prefix,
-        initial=initial,
-    )
-
-
-def _build_relay_event_section(
-    request: HttpRequest,
-    event: Event,
-    entries_for_event: list[MeetRelayEntry],
-    athlete_choices: list[Athlete],
-) -> Section:
-    forms = [
-        _build_relay_event_entry_form(
-            request, event, entries_for_event, athlete_choices, index
-        )
-        for index in range(ENTRIES_PER_EVENT)
-    ]
-    return {"event": event, "forms": forms, "count": ENTRIES_PER_EVENT}
-
-
-def _build_relay_event_entry_form(
-    request: HttpRequest,
-    event: Event,
-    entries_for_event: list[MeetRelayEntry],
-    athlete_choices: list[Athlete],
-    index: int,
-) -> MeetRelayEntryForm:
-    prefix = f"{event.as_prefix()}-{index}"
-
-    if request.method == "POST":
-        return MeetRelayEntryForm(athlete_choices, request.POST, prefix=prefix)
-
-    try:
-        entry = entries_for_event[index]
-        initial = {
-            "athlete_0": entry.athlete_0.pk,
-            "athlete_1": entry.athlete_1.pk,
-            "athlete_2": entry.athlete_2.pk,
-            "athlete_3": entry.athlete_3.pk,
-            "seed": entry.seed,
-        }
-    except IndexError:
-        initial = {}
-    return MeetRelayEntryForm(
-        athlete_choices,
-        prefix=prefix,
-        initial=initial,
-    )
+    return form_class(athlete_choices, prefix=prefix, initial=initial)
 
 
 def _update_entries(
     meet_pk: int,
     team_pk: int,
     sections: list[Section],
-    entries_by_event_by_athlete_pks: dict[Event, dict[tuple[int, ...]], MeetEntry],
+    entries_by_event_by_order: dict[Event, dict[int, MeetEntry]],
 ) -> None:
     for section in sections:
         event = section["event"]
-        for form in section["forms"]:
+        for index, form in enumerate(section["forms"]):
             form.full_clean()
-
-            if event in INDIVIDUAL_EVENTS:
-                athlete_pks = (form.cleaned_data.get("athlete"),)
-            elif event in RELAY_EVENTS:
-                athlete_pks = (
-                    form.cleaned_data.get("athlete_0"),
-                    form.cleaned_data.get("athlete_1"),
-                    form.cleaned_data.get("athlete_2"),
-                    form.cleaned_data.get("athlete_3"),
-                )
-            if any(athlete_pk is None for athlete_pk in athlete_pks):
+            if not form.is_valid() or _is_form_empty(event, form):
+                entries_by_event_by_order[event].pop(index, None)
                 continue
 
-            current_entry = entries_by_event_by_athlete_pks[event].get(athlete_pks)
-            seed = form.cleaned_data.get("seed")
-
+            current_entry = entries_by_event_by_order[event].get(index)
             if current_entry:
-                current_entry.seed = seed
-                current_entry.save()
-                entries_by_event_by_athlete_pks[event].pop(athlete_pks)
+                _update_entry(event, current_entry, form)
+                entries_by_event_by_order[event].pop(index)
             else:
-                if event in INDIVIDUAL_EVENTS:
-                    entry = MeetIndividualEntry(
-                        meet_id=meet_pk,
-                        team_id=team_pk,
-                        athlete_id=athlete_pks[0],
-                        event=event,
-                        seed=seed,
-                    )
-                    try:
-                        entry.full_clean()
-                        entry.save()
-                    except ValidationError as e:
-                        form.add_error(None, e)
-                elif event in RELAY_EVENTS:
-                    entry = MeetRelayEntry(
-                        meet_id=meet_pk,
-                        team_id=team_pk,
-                        athlete_0_id=athlete_pks[0],
-                        athlete_1_id=athlete_pks[1],
-                        athlete_2_id=athlete_pks[2],
-                        athlete_3_id=athlete_pks[3],
-                        event=event,
-                        seed=seed,
-                    )
-                    try:
-                        entry.full_clean()
-                        entry.save()
-                    except ValidationError as e:
-                        form.add_error(None, e)
+                entry = _create_entry(meet_pk, team_pk, event, index, form)
+                try:
+                    entry.full_clean()
+                    entry.save()
+                except ValidationError as e:
+                    form.add_error(None, e)
 
     for entry in itertools.chain.from_iterable(
         entries_by_athlete_pks.values()
-        for entries_by_athlete_pks in entries_by_event_by_athlete_pks.values()
+        for entries_by_athlete_pks in entries_by_event_by_order.values()
     ):
         entry.delete()
+
+
+INDIVIDUAL_EVENT_FORM_FIELDS = ["athlete", "seed"]
+RELAY_EVENT_FORM_FIELDS = ["athlete_0", "athlete_1", "athlete_2", "athlete_3", "seed"]
+
+
+def _is_form_empty(event: Event, form: MeetEntryForm) -> bool:
+    if event in INDIVIDUAL_EVENTS:
+        fields = INDIVIDUAL_EVENT_FORM_FIELDS
+    elif event in RELAY_EVENTS:
+        fields = RELAY_EVENT_FORM_FIELDS
+
+    return all(form.cleaned_data[field] is None for field in fields)
+
+
+def _update_entry(event: Event, entry: MeetEntry, form: MeetEntryForm) -> None:
+    if event in INDIVIDUAL_EVENTS:
+        entry.athlete_id = form.cleaned_data["athlete"]
+    elif event in RELAY_EVENTS:
+        entry.athlete_0_id = form.cleaned_data["athlete_0"]
+        entry.athlete_1_id = form.cleaned_data["athlete_1"]
+        entry.athlete_2_id = form.cleaned_data["athlete_2"]
+        entry.athlete_3_id = form.cleaned_data["athlete_3"]
+    entry.seed = form.cleaned_data["seed"]
+    entry.save()
+
+
+def _create_entry(meet_pk: int, team_pk: int, event: Event, index: int, form: MeetEntryForm) -> MeetEntry:
+    if event in INDIVIDUAL_EVENTS:
+        return MeetIndividualEntry(
+            meet_id=meet_pk,
+            team_id=team_pk,
+            event=event,
+            order=index,
+            athlete_id=form.cleaned_data["athlete"],
+            seed=form.cleaned_data["seed"],
+        )
+    elif event in RELAY_EVENTS:
+        return MeetRelayEntry(
+            meet_id=meet_pk,
+            team_id=team_pk,
+            event=event,
+            order=index,
+            athlete_0_id=form.cleaned_data["athlete_0"],
+            athlete_1_id=form.cleaned_data["athlete_1"],
+            athlete_2_id=form.cleaned_data["athlete_2"],
+            athlete_3_id=form.cleaned_data["athlete_3"],
+            seed=form.cleaned_data["seed"],
+        )

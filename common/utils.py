@@ -32,7 +32,7 @@ def linkify_fk(field_name: str):
 
 
 def is_seed(seed: str) -> bool:
-    return SEED_REGEX.match(seed)
+    return SEED_REGEX.match(seed) and seed != "."
 
 
 def seed_to_decimal(seed: str) -> Decimal:
