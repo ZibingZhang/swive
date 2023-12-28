@@ -29,3 +29,6 @@ db.sqlite3
 db.sqlite3-journal
 migrations/
 staticfiles/
+
+# Test data
+data/

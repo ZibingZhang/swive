@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% block before-table %}{% endblock %}
+
+  {% block table %}{% endblock %}
+  <div class="text-center">
+    <span class="">
+      {% for page_number in page.adjusted_elided_pages %}
+        {% if page_number == page.paginator.ELLIPSIS %}
+          {{page_number}}
+        {% else %}
+          <a href="{% url 'teams' %}?page={{ page_number }}" class="btn btn-primary">
+            {{page_number}}
+          </a>
+        {% endif %}
+      {% endfor %}
+    </span>
+  </div>
+
+  {% block after-table %}{% endblock %}
+{% endblock %}

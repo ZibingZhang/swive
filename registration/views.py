@@ -48,7 +48,7 @@ def meet_entries_for_team(
     request: HttpRequest, meet_pk: int, team_pk: int
 ) -> HttpResponse:
     _validate_request(request.user, meet_pk, team_pk)
-    athlete_choices = list(Athlete.objects.filter(team__pk=team_pk))
+    athlete_choices = list(Athlete.objects.filter(team__pk=team_pk, active=True))
 
     sections = []
     entries_by_event_by_order = _read_entries_by_event_by_order(meet_pk, team_pk)

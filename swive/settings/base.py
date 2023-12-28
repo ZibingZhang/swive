@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "account.apps.AccountConfig",
     "common.apps.CommonConfig",
     "registration.apps.RegistrationConfig",
+    "root.apps.RootConfig",
 ]
 
 MIDDLEWARE = [

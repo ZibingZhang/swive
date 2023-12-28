@@ -33,44 +33,29 @@ class BaseModel(models.Model):
         self.save()
 
 
-class League(BaseModel):
-    name = models.CharField(max_length=100)
-
-    def __str__(self) -> str:
-        return self.name
-
-
-class Gender(models.TextChoices):
-    FEMALE = "F", "Female"
-    MALE = "M", "Male"
-
-    def __str__(self) -> str:
-        return self.label
-
-
 class Team(BaseModel):
-    name = models.CharField(max_length=50)
-    gender = models.CharField(
-        max_length=1, choices=Gender.choices, blank=True, null=True
-    )
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ("name",)
 
     def __str__(self) -> str:
         return self.name
 
 
 class Meet(BaseModel):
-    league = models.ForeignKey(League, on_delete=models.RESTRICT)
-    start_date = models.DateField("start date")
-    end_date = models.DateField("end date")
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
+    start_date = models.DateField("start date", default=None, blank=True, null=True)
+    end_date = models.DateField("end date", default=None, blank=True, null=True)
 
     class Meta:
         constraints = [
             models.CheckConstraint(
-                name="start date before end date",
+                name="Meet start date before end date",
                 check=Q(start_date__lte=F("end_date")),
             )
         ]
+        ordering = ("name",)
 
     def __str__(self) -> str:
         return f"{self.name} ({self.start_date})"
@@ -80,12 +65,16 @@ class Athlete(BaseModel):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     team = models.ForeignKey(Team, on_delete=models.RESTRICT)
+    active = models.BooleanField(default=True)
     high_school_class_of = models.PositiveIntegerField(
         default=None,
         blank=True,
         null=True,
         validators=[MinValueValidator(1990), MaxValueValidator(2050)],
     )
+
+    class Meta:
+        ordering = ("team", "first_name", "last_name")
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name} ({self.pk})"

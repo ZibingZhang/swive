@@ -1,0 +1,18 @@
+{% extends "paginated-table-base.html" %}
+
+{% block table %}
+  <table class="table table-bordered table-hover">
+    <thead class="text-center">
+      <tr>
+        <th scope="col">Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for team in page %}
+        <tr>
+          <td>{{team.name}}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

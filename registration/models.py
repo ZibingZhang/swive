@@ -5,19 +5,7 @@ from django.db import models
 from django.db.models import Q
 
 from account.models import Profile
-from common.models import Athlete, BaseModel, EventChoice, League, Meet, Team
-
-
-class LeagueTeamEntry(BaseModel):
-    league = models.ForeignKey(League, on_delete=models.RESTRICT)
-    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
-
-    class Meta:
-        verbose_name = "League Team Entry"
-        verbose_name_plural = "League Team Entries"
-
-    def __str__(self) -> str:
-        return f"{self.league} - {self.team}"
+from common.models import Athlete, BaseModel, EventChoice, Meet, Team
 
 
 class MeetTeamEntry(BaseModel):
@@ -27,13 +15,21 @@ class MeetTeamEntry(BaseModel):
     class Meta:
         verbose_name = "Meet Team Entry"
         verbose_name_plural = "Meet Team Entries"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["meet", "team"],
+                condition=Q(deleted=False),
+                name="one MeetTeamEntry per (meet, team)",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.meet} - {self.team}"
 
-    @property
-    def edit(self) -> str:
-        return "Edit meet entries"
+    def clean(self) -> None:
+        qs = type(self).objects.filter(meet=self.meet, team=self.team)
+        if qs.exists() and qs.get() != self:
+            raise ValidationError(f"Entry already exists")
 
 
 class MeetEntry(BaseModel):
@@ -64,7 +60,7 @@ class MeetIndividualEntry(MeetEntry):
             models.UniqueConstraint(
                 fields=["meet", "team", "event", "order"],
                 condition=Q(deleted=False),
-                name="one individual entry per (meet, team, event, order)",
+                name="one MeetIndividualEntry per (meet, team, event, order)",
             )
         ]
 
@@ -96,7 +92,7 @@ class MeetRelayEntry(MeetEntry):
             models.UniqueConstraint(
                 fields=["meet", "team", "event", "order"],
                 condition=Q(deleted=False),
-                name="one relay entry per (meet, team, event, order)",
+                name="one MeetRelayEntry per (meet, team, event, order)",
             )
         ]
 

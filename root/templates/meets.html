@@ -1,0 +1,28 @@
+{% extends "paginated-table-base.html" %}
+
+{% block table %}
+  <table class="table table-bordered">
+    <thead class="text-center">
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Start Date</th>
+        <th scope="col">End Date</th>
+        <th scope="col">Registered Teams</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for meet in page %}
+        <tr class="align-middle">
+          <td>{{ meet.name }}</td>
+          <td>{{ meet.start_date }}</td>
+          <td>{{ meet.end_date }}</td>
+          <td class="position-relative text-center">
+            <a href="/meet/{{ meet.id }}/teams" class="btn btn-secondary link-light stretched-link text-decoration-none">
+              View Registered Teams
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

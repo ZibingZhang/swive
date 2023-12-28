@@ -7,7 +7,7 @@ from django.db import models
 from import_export.admin import ImportExportModelAdmin
 
 from common import utils
-from common.models import Athlete, League, Meet, Team
+from common.models import Athlete, Meet, Team
 from registration.models import CoachEntry, MeetTeamEntry
 
 if TYPE_CHECKING:
@@ -18,16 +18,9 @@ class BaseAdmin(ImportExportModelAdmin):
     pass
 
 
-@admin.register(League)
-class LeagueAdmin(BaseAdmin):
-    list_display = ("name",)
-    search_fields = ("name",)
-
-
 @admin.register(Team)
 class TeamAdmin(BaseAdmin):
-    list_display = ("name", "gender")
-    list_filter = ("gender",)
+    list_display = ("name",)
     search_fields = ("name",)
 
     def get_queryset(self, request: HttpRequest) -> models.QuerySet:
@@ -39,8 +32,9 @@ class TeamAdmin(BaseAdmin):
 
 @admin.register(Meet)
 class MeetAdmin(BaseAdmin):
-    list_display = ("name", "start_date", "end_date", utils.linkify_fk("league"))
-    list_filter = ("name", "start_date", "end_date")
+    fields = ("name", "start_date", "end_date")
+    list_display = ("name", "start_date", "end_date")
+    list_filter = ("start_date", "end_date")
     search_fields = ("name", "start_date", "end_date")
 
     def get_queryset(self, request: HttpRequest) -> models.QuerySet:
@@ -58,8 +52,14 @@ class MeetAdmin(BaseAdmin):
 
 @admin.register(Athlete)
 class AthleteAdmin(BaseAdmin):
-    list_display = ("__str__", utils.linkify_fk("team"))
-    search_fields = ("first_name", "last_name", "team")
+    list_display = (
+        "__str__",
+        utils.linkify_fk("team"),
+        "active",
+        "high_school_class_of",
+    )
+    list_filter = ("team", "active", "high_school_class_of")
+    search_fields = ("first_name", "last_name", "team__name")
 
     def get_queryset(self, request: HttpRequest) -> models.QuerySet:
         qs = super().get_queryset(request)

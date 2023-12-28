@@ -1,11 +1,19 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from typing import Any
 
 from django.urls import reverse
 from django.utils.html import format_html
 
 from common.constants import SEED_REGEX
+
+
+def as_int(value: Any, or_else: int) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return or_else
 
 
 # https://stackoverflow.com/a/53092940

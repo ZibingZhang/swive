@@ -5,16 +5,10 @@ from common import utils
 from common.admin import BaseAdmin
 from registration.models import (
     CoachEntry,
-    LeagueTeamEntry,
     MeetIndividualEntry,
     MeetRelayEntry,
     MeetTeamEntry,
 )
-
-
-@admin.register(LeagueTeamEntry)
-class LeagueTeamEntryAdmin(BaseAdmin):
-    list_display = ("id", utils.linkify_fk("league"), utils.linkify_fk("team"))
 
 
 @admin.register(MeetTeamEntry)
@@ -28,6 +22,8 @@ class MeetTeamEntryAdmin(BaseAdmin):
             f"/registration/meet/{entry.meet.pk}/team/{entry.team.pk}",
         ),
     )
+    list_filter = ("meet", "team")
+    search_fields = ("meet", "team")
 
 
 @admin.register(MeetIndividualEntry)
