@@ -8,6 +8,18 @@ from account.models import Profile
 from common.models import Athlete, BaseModel, EventChoice, Meet, Team
 
 
+class CoachEntry(BaseModel):
+    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
+    profile = models.ForeignKey(Profile, on_delete=models.RESTRICT)
+
+    class Meta:
+        verbose_name = "Coach Entry"
+        verbose_name_plural = "Coach Entries"
+
+    def __str__(self) -> str:
+        return f"{self.team} - {self.profile}"
+
+
 class MeetTeamEntry(BaseModel):
     meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
     team = models.ForeignKey(Team, on_delete=models.RESTRICT)
@@ -112,15 +124,3 @@ class MeetRelayEntry(MeetEntry):
         return (
             f"{self.meet} - {self.team} - {self.event} - {self.order} - {self.athletes}"
         )
-
-
-class CoachEntry(BaseModel):
-    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
-    profile = models.ForeignKey(Profile, on_delete=models.RESTRICT)
-
-    class Meta:
-        verbose_name = "Coach Entry"
-        verbose_name_plural = "Coach Entries"
-
-    def __str__(self) -> str:
-        return f"{self.team} - {self.profile}"

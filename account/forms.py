@@ -10,7 +10,6 @@ class ProfileCreationForm(UserCreationForm):
 
 
 class ProfileChangeForm(UserChangeForm):
-    # ...
     class Meta:
         model = Profile
         fields = ("first_name", "last_name", "email", "username")
@@ -18,3 +17,10 @@ class ProfileChangeForm(UserChangeForm):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         del self.fields["password"]
+
+
+class AdminProfileChangeForm(UserChangeForm):
+    class Meta:
+        model = Profile
+        fields = ("first_name",)
+        exclude = tuple()

@@ -4,13 +4,24 @@ from django import forms
 
 from common.forms import BaseForm, BaseModelForm
 from common.utils import is_seed
-from registration.models import Athlete
+from registration.models import CoachEntry
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from registration.models import Athlete
 
 
-class AthleteForm(BaseModelForm):
+class CoachEntryForm(BaseModelForm):
     class Meta:
-        model = Athlete
+        model = CoachEntry
         fields = "__all__"
+
+    def save(self, *args, **kwargs) -> CoachEntry:
+        profile = self.cleaned_data["profile"]
+        profile.is_coach = True
+        profile.save()
+        return super().save(*args, **kwargs)
 
 
 class MeetEntryForm(BaseForm):

@@ -3,12 +3,19 @@ from django.utils.html import format_html
 
 from common import utils
 from common.admin import BaseAdmin
+from registration.forms import CoachEntryForm
 from registration.models import (
     CoachEntry,
     MeetIndividualEntry,
     MeetRelayEntry,
     MeetTeamEntry,
 )
+
+
+@admin.register(CoachEntry)
+class CoachEntryAdmin(BaseAdmin):
+    form = CoachEntryForm
+    list_display = ("id", utils.linkify_fk("team"), utils.linkify_fk("profile"))
 
 
 @admin.register(MeetTeamEntry)
@@ -72,8 +79,3 @@ class MeetRelayEntryAdmin(BaseAdmin):
         utils.linkify_fk("athlete_3"),
         "seed",
     )
-
-
-@admin.register(CoachEntry)
-class CoachEntryAdmin(BaseAdmin):
-    list_display = ("id", utils.linkify_fk("team"), utils.linkify_fk("profile"))
