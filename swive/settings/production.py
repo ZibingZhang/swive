@@ -4,7 +4,10 @@ from .base import *  # noqa
 
 DEBUG = False
 
-ALLOWED_HOSTS = [".needhamswive.com"]
+ALLOWED_HOSTS = [
+    ".needhamswive.com",
+    "swive-env.eba-gemqwfjw.us-east-2.elasticbeanstalk.com",
+]
 
 # Database Settings
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

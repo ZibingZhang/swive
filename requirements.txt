@@ -2,7 +2,8 @@ asgiref==3.7.2
 defusedxml==0.7.1
 diff-match-patch==20230430
 Django==5.0
-django-import-export==3.3.4
+django-bootstrap5==23.4
+django-import-export==3.3.5
 et-xmlfile==1.1.0
 MarkupPy==1.14
 odfpy==1.4.1

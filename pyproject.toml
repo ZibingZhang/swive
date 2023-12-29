@@ -27,6 +27,9 @@ dev = [
     "pyproject-flake8>=5.0",
     "pytest>=7.4",
 ]
+eb = [
+    "awsebcli>=3.20",
+]
 
 [project.urls]
 Homepage = "https://github.com/ZibingZhang/swive"
@@ -50,4 +53,4 @@ profile = "black"
 plugins = ["mypy_django_plugin.main"]
 
 [tool.django-stubs]
-django_settings_module = "myproject.settings"
+django_settings_module = "swive.settings.production"

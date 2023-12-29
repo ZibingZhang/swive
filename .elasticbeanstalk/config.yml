@@ -1,0 +1,21 @@
+branch-defaults:
+  main:
+    environment: swive-env
+environment-defaults:
+  swive-env:
+    branch: null
+    repository: null
+global:
+  application_name: swive
+  branch: null
+  default_ec2_keyname: aws-eb
+  default_platform: Python 3.11
+  default_region: us-east-2
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: eb-cli
+  repository: null
+  sc: git
+  workspace_type: Application

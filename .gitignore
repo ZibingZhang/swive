@@ -14,7 +14,7 @@ build/
 *.egg-info/
 
 # Environments
-venv/
+*venv/
 
 # PyCharm
 .idea/
@@ -27,8 +27,14 @@ venv/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-migrations/
-staticfiles/
+*/migrations/*
+!*/migrations/__init__.py
+static/
 
 # Test data
 data/
+
+# Elastic Beanstalk files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*config.yml
+!.elasticbeanstalk/*global.yml
