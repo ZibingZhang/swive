@@ -114,16 +114,26 @@ class TableColumn:
         header: str,
         *,
         field: str | None = None,
-        builder: Callable[[BaseModel], str] | None = None,
+        builder: Callable[[BaseModel], str]
+        | Callable[[BaseModel, dict], str]
+        | None = None,
+        context: dict | None = None,
     ) -> None:
         self.header = header
         if field is None and builder is None:
             raise ValueError
         self.field = field
         self.builder = builder
+        self.context = context
+
+    def with_context(self, context: dict) -> TableColumn:
+        return TableColumn(
+            self.header, field=self.field, builder=self.builder, context=context
+        )
 
     def value_of(self, obj: BaseModel) -> str:
         if self.field:
             return str(getattr(obj, self.field))
-        elif self.builder:
+        if self.context is None:
             return self.builder(obj)
+        return self.builder(obj, self.context)

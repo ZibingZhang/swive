@@ -37,6 +37,18 @@ def teams_for_meet(request: HttpRequest, meet_pk: int) -> HttpResponse:
         request, Team, TeamAdmin, f"{meet_name} Teams", columns
     )
     renderer.objects = renderer.objects.filter(id__in=team_pks)
+
+    if request.user.is_authenticated and request.user.is_coach:
+        coach_team_pks = CoachEntry.objects.filter(profile=request.user).values_list("team__id", flat=True)
+        meet_team_pks_map = {}
+        for team_pk in coach_team_pks:
+            meet_team_pks_map[team_pk] = (meet_pk, team_pk)
+        renderer.columns.append(
+            Column.ENTRIES.with_context(
+                {"editable_pks": coach_team_pks, "meet_team_pks_map": meet_team_pks_map}
+            )
+        )
+
     return renderer.render()
 
 
@@ -72,4 +84,19 @@ def meets_for_team(request: HttpRequest, team_pk: int) -> HttpResponse:
         request, Meet, MeetAdmin, f"{team_name} Meets", columns
     )
     renderer.objects = renderer.objects.filter(id__in=meet_pks)
+
+    if (
+        request.user.is_authenticated
+        and request.user.is_coach
+        and CoachEntry.objects.filter(profile=request.user, team__id=team_pk).exists()
+    ):
+        meet_team_pks_map = {}
+        for meet in renderer.objects:
+            meet_team_pks_map[meet.id] = (meet.id, team_pk)
+        renderer.columns.append(
+            Column.ENTRIES.with_context(
+                {"editable_pks": meet_pks, "meet_team_pks_map": meet_team_pks_map}
+            )
+        )
+
     return renderer.render()
