@@ -16,6 +16,12 @@ from registration.models import (
 class CoachEntryAdmin(BaseAdmin):
     form = CoachEntryForm
     list_display = ("id", utils.linkify_fk("team"), utils.linkify_fk("profile"))
+    search_fields = (
+        "team__name",
+        "profile__first_name",
+        "profile__last_name",
+        "profile__username",
+    )
 
 
 @admin.register(MeetTeamEntry)
@@ -29,8 +35,7 @@ class MeetTeamEntryAdmin(BaseAdmin):
             f"/registration/meet/{entry.meet.pk}/team/{entry.team.pk}",
         ),
     )
-    list_filter = ("meet", "team")
-    search_fields = ("meet", "team")
+    search_fields = ("meet__name", "team__name")
 
 
 @admin.register(MeetIndividualEntry)
@@ -50,6 +55,14 @@ class MeetIndividualEntryAdmin(BaseAdmin):
         "event",
         "order",
         utils.linkify_fk("athlete"),
+        "seed",
+    )
+    search_fields = (
+        "meet__name",
+        "team__name",
+        "event",
+        "athlete__first_name",
+        "athlete__last_name",
         "seed",
     )
 
@@ -77,5 +90,19 @@ class MeetRelayEntryAdmin(BaseAdmin):
         utils.linkify_fk("athlete_1"),
         utils.linkify_fk("athlete_2"),
         utils.linkify_fk("athlete_3"),
+        "seed",
+    )
+    search_fields = (
+        "meet__name",
+        "team__name",
+        "event",
+        "athlete_0__first_name",
+        "athlete_0__last_name",
+        "athlete_1__first_name",
+        "athlete_1__last_name",
+        "athlete_2__first_name",
+        "athlete_2__last_name",
+        "athlete_3__first_name",
+        "athlete_3__last_name",
         "seed",
     )

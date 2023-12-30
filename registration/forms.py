@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django import forms
 
 from common.forms import BaseForm, BaseModelForm
 from common.utils import is_seed
 from registration.models import CoachEntry
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from registration.models import Athlete

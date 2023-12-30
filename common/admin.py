@@ -58,8 +58,8 @@ class AthleteAdmin(BaseAdmin):
         "active",
         "high_school_class_of",
     )
-    list_filter = ("team", "active", "high_school_class_of")
-    search_fields = ("first_name", "last_name", "team__name")
+    list_filter = ("active",)
+    search_fields = ("first_name", "last_name", "team__name", "high_school_class_of")
 
     def get_queryset(self, request: HttpRequest) -> models.QuerySet:
         qs = super().get_queryset(request)

@@ -58,7 +58,7 @@ class Meet(BaseModel):
         ordering = ("name",)
 
     def __str__(self) -> str:
-        return f"{self.name} ({self.start_date})"
+        return f"{self.name}"
 
 
 class Athlete(BaseModel):

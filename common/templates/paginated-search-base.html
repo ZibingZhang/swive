@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% load static %}
+  <script src="{% static 'paginated-search.js' %}" defer></script>
+
+  {% block before_table %}{% endblock %}
+  <div class="text-center fs-2 display-flex flex-column">
+    {{ table_header }}
+    <form action="{{ request.path }}" method="get">
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" id="search-field" value="{{ search_term }}" name="q" placeholder="Search" aria-label="Search" aria-describedby="search">
+        <button class="btn btn-outline-success" type="submit" id="search" value="Submit">Search</button>
+      </div>
+    </form>
+  </div>
+  {% block table %}
+    <table class="table table-bordered">
+      <thead class="text-center">
+        <tr>
+          {% for column_header in page.column_headers %}
+            <th scope="col">{{ column_header }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for object in page %}
+          <tr class="align-middle">
+            {% for value in object %}
+              <td>{{ value | safe }}</td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endblock %}
+  {% block pagination %}
+    <div class="text-center" id="page-links">
+      <span>
+        {% for page_number in page.adjusted_elided_pages %}
+          {% if page_number == page.paginator.ELLIPSIS %}
+            {{page_number}}
+          {% else %}
+            <a
+              href="?page={{ page_number }}"
+              class="btn {% if page_number == page.number %}btn-primary{% else %}btn-secondary{% endif %}"
+              data-page="{{ page_number }}"
+            >
+              {{page_number}}
+            </a>
+          {% endif %}
+        {% endfor %}
+      </span>
+    </div>
+  {% endblock %}
+
+  {% block after_table %}{% endblock %}
+{% endblock %}
