@@ -1,19 +1,27 @@
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Q
 
+from account.models import Profile
 from common.constants import Event
 
 
+class BaseManager(models.Manager):
+    pass
+
+
 class BaseModel(models.Model):
+    objects = BaseManager()
+
     class Meta:
         abstract = True
 
 
-class SoftDeleteManager(models.Manager):
-    def __init__(self, include_deleted: bool) -> None:
+class SoftDeleteManager(BaseManager):
+    def __init__(self, include_deleted: bool = False) -> None:
         super().__init__()
         self.include_deleted = include_deleted
 
@@ -36,16 +44,6 @@ class SoftDeleteModel(BaseModel):
         """Mark the record as deleted instead of deleting it"""
         self.deleted = True
         self.save()
-
-
-class Team(SoftDeleteModel):
-    name = models.CharField(max_length=50, unique=True)
-
-    class Meta:
-        ordering = ("name",)
-
-    def __str__(self) -> str:
-        return self.name
 
 
 class Meet(SoftDeleteModel):
@@ -71,10 +69,30 @@ class Meet(SoftDeleteModel):
         return f"{self.name}"
 
 
+class Team(SoftDeleteModel):
+    name = models.CharField(max_length=50, unique=True)
+    coaches = models.ManyToManyField(
+        Profile,
+        through="Coach",
+        related_name="teams"
+    )
+    meets = models.ManyToManyField(
+        Meet,
+        through="MeetTeam",
+        related_name="teams"
+    )
+
+    class Meta:
+        ordering = ("name",)
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class Athlete(SoftDeleteModel):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
+    team = models.ForeignKey(Team, on_delete=models.RESTRICT, related_name="athletes")
     active = models.BooleanField(default=True)
     high_school_class_of = models.PositiveIntegerField(
         default=None,
@@ -88,6 +106,41 @@ class Athlete(SoftDeleteModel):
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name} ({self.id})"
+
+
+class Coach(SoftDeleteModel):
+    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
+    profile = models.ForeignKey(Profile, on_delete=models.RESTRICT)
+
+    class Meta:
+        verbose_name_plural = "Coaches"
+
+    def __str__(self) -> str:
+        return f"{self.team} - {self.profile}"
+
+
+class MeetTeam(SoftDeleteModel):
+    meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
+    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
+
+    class Meta:
+        verbose_name = "Meet Team Entry"
+        verbose_name_plural = "Meet Team Entries"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["meet", "team"],
+                condition=Q(deleted=False),
+                name="one MeetTeam per (meet, team)",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.meet} - {self.team}"
+
+    def clean(self) -> None:
+        qs = type(self).objects.filter(meet=self.meet, team=self.team)
+        if qs.exists() and qs.get() != self:
+            raise ValidationError(f"Entry already exists")
 
 
 class EventChoice(models.TextChoices):

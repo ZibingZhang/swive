@@ -5,43 +5,7 @@ from django.db import models
 from django.db.models import Q
 
 from account.models import Profile
-from common.models import Athlete, EventChoice, Meet, SoftDeleteModel, Team
-
-
-class CoachEntry(SoftDeleteModel):
-    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
-    profile = models.ForeignKey(Profile, on_delete=models.RESTRICT)
-
-    class Meta:
-        verbose_name = "Coach Entry"
-        verbose_name_plural = "Coach Entries"
-
-    def __str__(self) -> str:
-        return f"{self.team} - {self.profile}"
-
-
-class MeetTeamEntry(SoftDeleteModel):
-    meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
-    team = models.ForeignKey(Team, on_delete=models.RESTRICT)
-
-    class Meta:
-        verbose_name = "Meet Team Entry"
-        verbose_name_plural = "Meet Team Entries"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["meet", "team"],
-                condition=Q(deleted=False),
-                name="one MeetTeamEntry per (meet, team)",
-            )
-        ]
-
-    def __str__(self) -> str:
-        return f"{self.meet} - {self.team}"
-
-    def clean(self) -> None:
-        qs = type(self).objects.filter(meet=self.meet, team=self.team)
-        if qs.exists() and qs.get() != self:
-            raise ValidationError(f"Entry already exists")
+from common.models import Athlete, EventChoice, Meet, SoftDeleteModel, Team, BaseModel
 
 
 class MeetEntry(SoftDeleteModel):
@@ -124,3 +88,15 @@ class MeetRelayEntry(MeetEntry):
         return (
             f"{self.meet} - {self.team} - {self.event} - {self.order} - {self.athletes}"
         )
+
+
+class CoachEntryRequest(BaseModel):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Coach Request"
+        verbose_name_plural = "Coach Requests"
+
+    def __str__(self) -> str:
+        return f"{self.team} - {self.profile}"

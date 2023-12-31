@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING, TypeVar
 from django.contrib.auth.decorators import login_required
 
 from common.admin import MeetAdmin, TeamAdmin
-from common.models import Meet, SoftDeleteModel, Team
+from common.models import Meet, SoftDeleteModel, Team, Coach
 from common.paginator import PaginatedSearchRenderer
-from registration.models import CoachEntry, MeetTeamEntry
+from common.models import MeetTeam
 from root.columns import Column
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ def all_meets(request: HttpRequest) -> HttpResponse:
 def teams_for_meet(request: HttpRequest, meet_id: int) -> HttpResponse:
     columns = [Column.NAME, Column.REGISTERED_MEETS]
     meet_name = Meet.objects.filter(id=meet_id).get().name
-    team_ids = MeetTeamEntry.objects.filter(meet__id=meet_id).values_list(
+    team_ids = MeetTeam.objects.filter(meet__id=meet_id).values_list(
         "team_id", flat=True
     )
     renderer = PaginatedSearchRenderer(
@@ -39,7 +39,7 @@ def teams_for_meet(request: HttpRequest, meet_id: int) -> HttpResponse:
     renderer.objects = renderer.objects.filter(id__in=team_ids)
 
     if request.user.is_authenticated and request.user.is_coach:
-        coach_team_ids = CoachEntry.objects.filter(profile=request.user).values_list(
+        coach_team_ids = Coach.objects.filter(profile=request.user).values_list(
             "team_id", flat=True
         )
         meet_team_ids_map = {}
@@ -64,7 +64,7 @@ def all_teams(request: HttpRequest) -> HttpResponse:
 def my_teams(request: HttpRequest) -> HttpResponse:
     columns = [Column.NAME, Column.REGISTERED_MEETS]
     renderer = PaginatedSearchRenderer(request, Team, TeamAdmin, "My Teams", columns)
-    team_ids = CoachEntry.objects.filter(profile=request.user).values_list(
+    team_ids = Coach.objects.filter(profile=request.user).values_list(
         "team_id", flat=True
     )
     renderer.objects = renderer.objects.filter(id__in=team_ids)
@@ -79,7 +79,7 @@ def meets_for_team(request: HttpRequest, team_id: int) -> HttpResponse:
         Column.REGISTERED_TEAMS,
     ]
     team_name = Team.objects.filter(id=team_id).get().name
-    meet_ids = MeetTeamEntry.objects.filter(team_id=team_id).values_list(
+    meet_ids = MeetTeam.objects.filter(team_id=team_id).values_list(
         "meet_id", flat=True
     )
     renderer = PaginatedSearchRenderer(
@@ -90,7 +90,7 @@ def meets_for_team(request: HttpRequest, team_id: int) -> HttpResponse:
     if (
         request.user.is_authenticated
         and request.user.is_coach
-        and CoachEntry.objects.filter(profile=request.user, team_id=team_id).exists()
+        and Coach.objects.filter(profile=request.user, team_id=team_id).exists()
     ):
         meet_team_ids_map = {}
         for meet in renderer.objects:

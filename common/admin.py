@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING
 
 from django.contrib import admin
 from django.db import models
+from django.utils.html import format_html
 from import_export.admin import ImportExportModelAdmin
 
 from common import utils
-from common.forms import AthleteAdminForm
-from common.models import Athlete, Meet, Team
-from registration.models import CoachEntry, MeetTeamEntry
+from common.forms import AthleteAdminForm, CoachForm
+from common.models import Athlete, Meet, Team, Coach, MeetTeam
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
@@ -41,7 +41,7 @@ class MeetAdmin(BaseAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        teams_ids = CoachEntry.objects.filter(profile=request.user).values_list(
+        teams_ids = Coach.objects.filter(profile=request.user).values_list(
             "team__id", flat=True
         )
         meet_ids = MeetTeamEntry.objects.filter(team_id__in=teams_ids).values_list(
@@ -71,7 +71,33 @@ class AthleteAdmin(BaseAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        teams_ids = CoachEntry.objects.filter(profile=request.user).values_list(
+        teams_ids = Coach.objects.filter(profile=request.user).values_list(
             "team_id", flat=True
         )
         return qs.filter(team_id__in=teams_ids)
+
+
+@admin.register(Coach)
+class CoachAdmin(BaseAdmin):
+    form = CoachForm
+    list_display = ("id", utils.linkify_fk("team"), utils.linkify_fk("profile"))
+    search_fields = (
+        "team__name",
+        "profile__first_name",
+        "profile__last_name",
+        "profile__username",
+    )
+
+
+@admin.register(MeetTeam)
+class MeetTeamAdmin(BaseAdmin):
+    list_display = (
+        "id",
+        utils.linkify_fk("meet"),
+        utils.linkify_fk("team"),
+        lambda entry: format_html(
+            '<a href="{}" target="_blank">Edit meet entries</a>',
+            f"/registration/entries/meet/{entry.meet.id}/team/{entry.team.id}/edit",
+        ),
+    )
+    search_fields = ("meet__name", "team__name")

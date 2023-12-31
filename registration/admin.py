@@ -1,41 +1,11 @@
 from django.contrib import admin
-from django.utils.html import format_html
 
 from common import utils
 from common.admin import BaseAdmin
-from registration.forms import CoachEntryForm
 from registration.models import (
-    CoachEntry,
     MeetIndividualEntry,
     MeetRelayEntry,
-    MeetTeamEntry,
 )
-
-
-@admin.register(CoachEntry)
-class CoachEntryAdmin(BaseAdmin):
-    form = CoachEntryForm
-    list_display = ("id", utils.linkify_fk("team"), utils.linkify_fk("profile"))
-    search_fields = (
-        "team__name",
-        "profile__first_name",
-        "profile__last_name",
-        "profile__username",
-    )
-
-
-@admin.register(MeetTeamEntry)
-class MeetTeamEntryAdmin(BaseAdmin):
-    list_display = (
-        "id",
-        utils.linkify_fk("meet"),
-        utils.linkify_fk("team"),
-        lambda entry: format_html(
-            '<a href="{}" target="_blank">Edit meet entries</a>',
-            f"/registration/meet/{entry.meet.id}/team/{entry.team.id}",
-        ),
-    )
-    search_fields = ("meet__name", "team__name")
 
 
 @admin.register(MeetIndividualEntry)

@@ -9,9 +9,9 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
 from common.constants import EVENT_ORDER
-from common.models import Meet, Team
+from common.models import Meet, Team, Coach, MeetTeam
 from registration.managers import MeetEntriesManager
-from registration.models import Athlete, CoachEntry, MeetTeamEntry
+from registration.models import Athlete
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse
@@ -97,12 +97,12 @@ def _validate_request(user: Profile, meet_id: int, team_id: int) -> None:
         raise Http404("Meet not found")
     if not Team.objects.filter(id=team_id).exists():
         raise Http404("Team not found")
-    if not MeetTeamEntry.objects.filter(meet__id=meet_id, team__id=team_id).exists():
+    if not MeetTeam.objects.filter(meet__id=meet_id, team__id=team_id).exists():
         raise Http404("Team not registered to meet")
 
     if user.is_superuser:
         return
-    team_ids = CoachEntry.objects.filter(profile=user).values_list(
+    team_ids = Coach.objects.filter(profile=user).values_list(
         "team__id", flat=True
     )
     if team_id not in team_ids:
