@@ -71,7 +71,7 @@ class MeetIndividualEntryForm(MeetEntryForm):
     def __init__(self, athlete_choices: list[Athlete], *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.fields["athlete"].choices += [
-            (athlete.pk, athlete) for athlete in athlete_choices
+            (athlete.id, athlete) for athlete in athlete_choices
         ]
 
 
@@ -92,14 +92,14 @@ class MeetRelayEntryForm(MeetEntryForm):
     def __init__(self, athlete_choices: list[Athlete], *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.fields["athlete_0"].choices += [
-            (athlete.pk, athlete) for athlete in athlete_choices
+            (athlete.id, athlete) for athlete in athlete_choices
         ]
         self.fields["athlete_1"].choices += [
-            (athlete.pk, athlete) for athlete in athlete_choices
+            (athlete.id, athlete) for athlete in athlete_choices
         ]
         self.fields["athlete_2"].choices += [
-            (athlete.pk, athlete) for athlete in athlete_choices
+            (athlete.id, athlete) for athlete in athlete_choices
         ]
         self.fields["athlete_3"].choices += [
-            (athlete.pk, athlete) for athlete in athlete_choices
+            (athlete.id, athlete) for athlete in athlete_choices
         ]

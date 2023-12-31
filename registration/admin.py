@@ -32,7 +32,7 @@ class MeetTeamEntryAdmin(BaseAdmin):
         utils.linkify_fk("team"),
         lambda entry: format_html(
             '<a href="{}" target="_blank">Edit meet entries</a>',
-            f"/registration/meet/{entry.meet.pk}/team/{entry.team.pk}",
+            f"/registration/meet/{entry.meet.id}/team/{entry.team.id}",
         ),
     )
     search_fields = ("meet__name", "team__name")

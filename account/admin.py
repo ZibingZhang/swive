@@ -42,7 +42,7 @@ class ProfileAdmin(UserAdmin, BaseAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return qs.filter(pk=request.user.pk)
+        return qs.filter(id=request.user.id)
 
 
 @admin.register(Group)

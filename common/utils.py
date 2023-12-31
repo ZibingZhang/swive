@@ -32,7 +32,7 @@ def linkify_fk(field_name: str):
         app_label = linked_obj._meta.app_label
         model_name = linked_obj._meta.model_name
         view_name = f"admin:{app_label}_{model_name}_change"
-        link_url = reverse(view_name, args=[linked_obj.pk])
+        link_url = reverse(view_name, args=[linked_obj.id])
         return format_html('<a href="{}">{}</a>', link_url, linked_obj)
 
     _linkify_fk.short_description = field_name  # Sets column name

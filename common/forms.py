@@ -23,7 +23,7 @@ class AthleteAdminForm(BaseModelForm):
         super().__init__(*args, **kwargs)
         if self.current_user.is_superuser:
             return
-        team_pks = CoachEntry.objects.filter(profile=self.current_user).values_list(
+        team_ids = CoachEntry.objects.filter(profile=self.current_user).values_list(
             "team_id", flat=True
         )
-        self.fields["team"].queryset = Team.objects.filter(id__in=team_pks)
+        self.fields["team"].queryset = Team.objects.filter(id__in=team_ids)

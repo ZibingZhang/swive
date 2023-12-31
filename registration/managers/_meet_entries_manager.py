@@ -40,12 +40,12 @@ class MeetEntriesManager:
 
     @staticmethod
     def read_entries_by_event_by_order(
-        meet_pk: int, team_pk: int
+        meet_id: int, team_id: int
     ) -> dict[Event, dict[int, MeetEntry]]:
         entries_by_event_by_order = defaultdict(lambda: {})
         for entry in itertools.chain(
-            MeetIndividualEntry.objects.filter(meet__pk=meet_pk, team__pk=team_pk),
-            MeetRelayEntry.objects.filter(meet__pk=meet_pk, team__pk=team_pk),
+            MeetIndividualEntry.objects.filter(meet__id=meet_id, team__id=team_id),
+            MeetRelayEntry.objects.filter(meet__id=meet_id, team__id=team_id),
         ):
             entries_by_event_by_order[entry.event][entry.order] = entry
         return entries_by_event_by_order
@@ -111,17 +111,17 @@ class MeetEntriesManager:
         if event in INDIVIDUAL_EVENTS:
             initial.update(
                 {
-                    "athlete": entry.athlete.pk,
+                    "athlete": entry.athlete.id,
                     "seed": entry.seed,
                 }
             )
         elif event in RELAY_EVENTS:
             initial.update(
                 {
-                    "athlete_0": entry.athlete_0.pk,
-                    "athlete_1": entry.athlete_1.pk,
-                    "athlete_2": entry.athlete_2.pk,
-                    "athlete_3": entry.athlete_3.pk,
+                    "athlete_0": entry.athlete_0.id,
+                    "athlete_1": entry.athlete_1.id,
+                    "athlete_2": entry.athlete_2.id,
+                    "athlete_3": entry.athlete_3.id,
                     "seed": entry.seed,
                 }
             )
@@ -130,8 +130,8 @@ class MeetEntriesManager:
 
     @staticmethod
     def update_entries(
-        meet_pk: int,
-        team_pk: int,
+        meet_id: int,
+        team_id: int,
         sections: list[Section],
         entries_by_event_by_order: dict[Event, dict[int, MeetEntry]],
     ) -> None:
@@ -154,7 +154,7 @@ class MeetEntriesManager:
                     entries_by_event_by_order[event].pop(index)
                 else:
                     entry = MeetEntriesManager._create_entry(
-                        meet_pk, team_pk, event, index, form
+                        meet_id, team_id, event, index, form
                     )
                     try:
                         entry.full_clean()
@@ -163,8 +163,8 @@ class MeetEntriesManager:
                         form.add_error(None, e)
 
         for entry in itertools.chain.from_iterable(
-            entries_by_athlete_pks.values()
-            for entries_by_athlete_pks in entries_by_event_by_order.values()
+            entries_by_athlete_ids.values()
+            for entries_by_athlete_ids in entries_by_event_by_order.values()
         ):
             entry.delete()
 
@@ -207,19 +207,19 @@ class MeetEntriesManager:
 
     @staticmethod
     def _create_entry(
-        meet_pk: int, team_pk: int, event: Event, index: int, form: MeetEntryForm
+        meet_id: int, team_id: int, event: Event, index: int, form: MeetEntryForm
     ) -> MeetEntry:
         if event in INDIVIDUAL_EVENTS:
             return MeetIndividualEntry(
-                meet_id=meet_pk,
-                team_id=team_pk,
+                meet_id=meet_id,
+                team_id=team_id,
                 event=event,
                 order=index,
                 athlete=Athlete.objects.filter(id=form.cleaned_data["athlete"]).get(),
                 seed=form.cleaned_data["seed"],
             )
         elif event in RELAY_EVENTS:
-            athletes_by_pk = {
+            athletes_by_id = {
                 athlete.id: athlete
                 for athlete in Athlete.objects.filter(
                     id__in=[
@@ -231,13 +231,13 @@ class MeetEntriesManager:
                 )
             }
             return MeetRelayEntry(
-                meet_id=meet_pk,
-                team_id=team_pk,
+                meet_id=meet_id,
+                team_id=team_id,
                 event=event,
                 order=index,
-                athlete_0=athletes_by_pk[form.cleaned_data["athlete_0"]],
-                athlete_1=athletes_by_pk[form.cleaned_data["athlete_1"]],
-                athlete_2=athletes_by_pk[form.cleaned_data["athlete_2"]],
-                athlete_3=athletes_by_pk[form.cleaned_data["athlete_3"]],
+                athlete_0=athletes_by_id[form.cleaned_data["athlete_0"]],
+                athlete_1=athletes_by_id[form.cleaned_data["athlete_1"]],
+                athlete_2=athletes_by_id[form.cleaned_data["athlete_2"]],
+                athlete_3=athletes_by_id[form.cleaned_data["athlete_3"]],
                 seed=form.cleaned_data["seed"],
             )

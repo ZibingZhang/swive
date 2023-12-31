@@ -114,11 +114,11 @@ class MeetRelayEntry(MeetEntry):
 
     def clean(self) -> None:
         super().clean()
-        athlete_pks = set()
+        athlete_ids = set()
         for athlete in self.athletes:
-            if athlete.pk in athlete_pks:
+            if athlete.id in athlete_ids:
                 raise ValidationError(f"Duplicate athlete {athlete}")
-            athlete_pks.add(athlete.pk)
+            athlete_ids.add(athlete.id)
 
     def __str__(self) -> str:
         return (

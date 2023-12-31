@@ -27,13 +27,13 @@ def _registered_teams_builder(meet: Meet) -> str:
 
 
 def _entries_builder(obj: Any, context: dict) -> str:
-    editable_pks = context["editable_pks"]
-    if obj.id not in editable_pks:
+    editable_ids = context["editable_ids"]
+    if obj.id not in editable_ids:
         return ""
-    meet_team_pks = context["meet_team_pks_map"][obj.id]
+    meet_team_ids = context["meet_team_ids_map"][obj.id]
     return f"""
         <div class="position-relative text-center">
-            <a href="/registration/entries/meet/{meet_team_pks[0]}/team/{meet_team_pks[1]}/edit" class="btn btn-secondary link-light stretched-link text-decoration-none">
+            <a href="/registration/entries/meet/{meet_team_ids[0]}/team/{meet_team_ids[1]}/edit" class="btn btn-secondary link-light stretched-link text-decoration-none">
                 View Entries
             </a>
         </div"""

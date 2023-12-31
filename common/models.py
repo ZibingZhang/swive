@@ -87,7 +87,7 @@ class Athlete(SoftDeleteModel):
         ordering = ("team", "first_name", "last_name")
 
     def __str__(self) -> str:
-        return f"{self.first_name} {self.last_name} ({self.pk})"
+        return f"{self.first_name} {self.last_name} ({self.id})"
 
 
 class EventChoice(models.TextChoices):
