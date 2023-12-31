@@ -27,6 +27,7 @@ class ProfileAdmin(UserAdmin, BaseAdmin):
                     "is_active",
                     "is_staff",
                     "is_superuser",
+                    "is_official",
                     "is_coach",
                     "groups",
                     "user_permissions",

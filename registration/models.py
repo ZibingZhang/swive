@@ -5,10 +5,10 @@ from django.db import models
 from django.db.models import Q
 
 from account.models import Profile
-from common.models import Athlete, BaseModel, EventChoice, Meet, Team
+from common.models import Athlete, EventChoice, Meet, SoftDeleteModel, Team
 
 
-class CoachEntry(BaseModel):
+class CoachEntry(SoftDeleteModel):
     team = models.ForeignKey(Team, on_delete=models.RESTRICT)
     profile = models.ForeignKey(Profile, on_delete=models.RESTRICT)
 
@@ -20,7 +20,7 @@ class CoachEntry(BaseModel):
         return f"{self.team} - {self.profile}"
 
 
-class MeetTeamEntry(BaseModel):
+class MeetTeamEntry(SoftDeleteModel):
     meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
     team = models.ForeignKey(Team, on_delete=models.RESTRICT)
 
@@ -44,7 +44,7 @@ class MeetTeamEntry(BaseModel):
             raise ValidationError(f"Entry already exists")
 
 
-class MeetEntry(BaseModel):
+class MeetEntry(SoftDeleteModel):
     meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
     team = models.ForeignKey(Team, on_delete=models.RESTRICT)
     event = models.CharField(max_length=30, choices=EventChoice.choices)

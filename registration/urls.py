@@ -4,8 +4,13 @@ from . import views
 
 urlpatterns = [
     path(
-        "meet/<int:meet_pk>/team/<int:team_pk>/",
-        views.meet_entries_for_team,
-        name="meet entries",
+        "entries/meet/<int:meet_pk>/team/<int:team_pk>/edit",
+        views.edit_meet_entries,
+        name="edit meet entries",
+    ),
+    path(
+        "entries/meet/<int:meet_pk>/team/<int:team_pk>/view",
+        views.view_meet_entries,
+        name="view meet entries",
     ),
 ]

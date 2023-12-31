@@ -7,7 +7,12 @@ from django.db.models import F, Q
 from common.constants import Event
 
 
-class BaseManager(models.Manager):
+class BaseModel(models.Model):
+    class Meta:
+        abstract = True
+
+
+class SoftDeleteManager(models.Manager):
     def __init__(self, include_deleted: bool) -> None:
         super().__init__()
         self.include_deleted = include_deleted
@@ -19,10 +24,10 @@ class BaseManager(models.Manager):
             return super().get_queryset().filter(deleted=False)
 
 
-class BaseModel(models.Model):
+class SoftDeleteModel(BaseModel):
     deleted = models.BooleanField(default=False, editable=False)
-    objects = BaseManager(include_deleted=False)
-    all_objects = BaseManager(include_deleted=True)
+    objects = SoftDeleteManager(include_deleted=False)
+    all_objects = SoftDeleteManager(include_deleted=True)
 
     class Meta:
         abstract = True
@@ -33,7 +38,7 @@ class BaseModel(models.Model):
         self.save()
 
 
-class Team(BaseModel):
+class Team(SoftDeleteModel):
     name = models.CharField(max_length=50, unique=True)
 
     class Meta:
@@ -43,10 +48,15 @@ class Team(BaseModel):
         return self.name
 
 
-class Meet(BaseModel):
+class Meet(SoftDeleteModel):
     name = models.CharField(max_length=100, unique=True)
     start_date = models.DateField("start date", default=None, blank=True, null=True)
     end_date = models.DateField("end date", default=None, blank=True, null=True)
+    entries_open = models.BooleanField(
+        "entries open",
+        default=False,
+        help_text="Designates whether entries are open for editing for the meet.",
+    )
 
     class Meta:
         constraints = [
@@ -61,7 +71,7 @@ class Meet(BaseModel):
         return f"{self.name}"
 
 
-class Athlete(BaseModel):
+class Athlete(SoftDeleteModel):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     team = models.ForeignKey(Team, on_delete=models.RESTRICT)

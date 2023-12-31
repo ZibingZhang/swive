@@ -7,6 +7,7 @@ from django.db import models
 from import_export.admin import ImportExportModelAdmin
 
 from common import utils
+from common.forms import AthleteAdminForm
 from common.models import Athlete, Meet, Team
 from registration.models import CoachEntry, MeetTeamEntry
 
@@ -32,7 +33,6 @@ class TeamAdmin(BaseAdmin):
 
 @admin.register(Meet)
 class MeetAdmin(BaseAdmin):
-    fields = ("name", "start_date", "end_date")
     list_display = ("name", "start_date", "end_date")
     list_filter = ("start_date", "end_date")
     search_fields = ("name", "start_date", "end_date")
@@ -52,6 +52,7 @@ class MeetAdmin(BaseAdmin):
 
 @admin.register(Athlete)
 class AthleteAdmin(BaseAdmin):
+    form = AthleteAdminForm
     list_display = (
         "__str__",
         utils.linkify_fk("team"),
@@ -61,11 +62,16 @@ class AthleteAdmin(BaseAdmin):
     list_filter = ("active",)
     search_fields = ("first_name", "last_name", "team__name", "high_school_class_of")
 
+    def get_form(self, request, *args, **kwargs):
+        form = super().get_form(request, *args, **kwargs)
+        form.current_user = request.user
+        return form
+
     def get_queryset(self, request: HttpRequest) -> models.QuerySet:
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
         teams_pks = CoachEntry.objects.filter(profile=request.user).values_list(
-            "team_pk", flat=True
+            "team_id", flat=True
         )
-        return qs.filter(team_pk__in=teams_pks)
+        return qs.filter(team_id__in=teams_pks)

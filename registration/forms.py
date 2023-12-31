@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from django import forms
+from django.contrib.auth.models import Permission
 
 from common.forms import BaseForm, BaseModelForm
 from common.utils import is_seed
@@ -13,13 +14,26 @@ if TYPE_CHECKING:
 
 
 class CoachEntryForm(BaseModelForm):
+    COACH_PERMISSIONS = {
+        "add_athlete",
+        "change_athlete",
+        "delete_athlete",
+        "view_athlete",
+    }
+
     class Meta:
         model = CoachEntry
         fields = "__all__"
 
     def save(self, *args, **kwargs) -> CoachEntry:
+        # TODO: validate permissions
         profile = self.cleaned_data["profile"]
         profile.is_coach = True
+        profile.is_staff = True
+        permission_ids = Permission.objects.filter(
+            codename__in=CoachEntryForm.COACH_PERMISSIONS
+        ).values_list("id", flat=True)
+        profile.user_permissions.add(*permission_ids)
         profile.save()
         return super().save(*args, **kwargs)
 

@@ -6,6 +6,11 @@ from django.db import models
 
 
 class Profile(AbstractUser):
+    is_official = models.BooleanField(
+        "official status",
+        default=False,
+        help_text="Designates whether the user is an official.",
+    )
     is_coach = models.BooleanField(
         "coach status",
         default=False,

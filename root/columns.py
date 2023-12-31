@@ -33,7 +33,7 @@ def _entries_builder(obj: Any, context: dict) -> str:
     meet_team_pks = context["meet_team_pks_map"][obj.id]
     return f"""
         <div class="position-relative text-center">
-            <a href="/registration/meet/{meet_team_pks[0]}/team/{meet_team_pks[1]}" class="btn btn-secondary link-light stretched-link text-decoration-none">
+            <a href="/registration/entries/meet/{meet_team_pks[0]}/team/{meet_team_pks[1]}/edit" class="btn btn-secondary link-light stretched-link text-decoration-none">
                 View Entries
             </a>
         </div"""
