@@ -58,9 +58,14 @@
             {% endfor %}
           </tbody>
         </table>
-        <div class="text-center">
-          {% bootstrap_button button_type="submit" content="Save" %}
-        </div>
+        {% if not view_only %}
+          <div class="text-center">
+            <a href="/registration/entries/meet/{{ meet_pk }}/team/{{ team_pk }}/view" class="btn btn-secondary link-light text-decoration-none">
+              Preview
+            </a>
+            {% bootstrap_button button_type="submit" content="Save" %}
+          </div>
+        {% endif %}
       </form>
     </div>
     <div class="col-xl-1"></div>

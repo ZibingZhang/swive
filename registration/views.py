@@ -31,17 +31,13 @@ def edit_meet_entries(request: HttpRequest, meet_pk: int, team_pk: int) -> HttpR
         return redirect("view meet entries", meet_pk=meet_pk, team_pk=team_pk)
 
     athlete_choices = list(Athlete.objects.filter(team__pk=team_pk, active=True))
-
-    sections = []
     entries_by_event_by_order = MeetEntriesManager.read_entries_by_event_by_order(
         meet_pk, team_pk
     )
-    for event in EVENT_ORDER:
-        sections.append(
-            MeetEntriesManager.build_event_section_for_editing(
-                request, event, entries_by_event_by_order[event], athlete_choices
-            )
-        )
+    sections = MeetEntriesManager.build_event_sections(
+        request, EVENT_ORDER, entries_by_event_by_order, athlete_choices
+    )
+
     if request.method == "POST":
         MeetEntriesManager.update_entries(
             meet_pk, team_pk, sections, entries_by_event_by_order
@@ -51,8 +47,15 @@ def edit_meet_entries(request: HttpRequest, meet_pk: int, team_pk: int) -> HttpR
 
     return render(
         request,
-        "edit-meet-entries.html",
-        {"meet_name": meet.name, "team_name": team.name, "sections": sections},
+        "meet-entries.html",
+        {
+            "meet_name": meet.name,
+            "team_name": team.name,
+            "sections": sections,
+            "view_only": False,
+            "meet_pk": meet_pk,
+            "team_pk": team_pk,
+        },
     )
 
 
@@ -60,7 +63,33 @@ def edit_meet_entries(request: HttpRequest, meet_pk: int, team_pk: int) -> HttpR
 @require_http_methods(["GET"])
 def view_meet_entries(request: HttpRequest, meet_pk: int, team_pk: int) -> HttpResponse:
     _validate_request(request.user, meet_pk, team_pk)
-    return render(request, "view-meet-entries.html", {"sections": []})
+
+    meet = Meet.objects.filter(id=meet_pk).get()
+    team = Team.objects.filter(id=team_pk).get()
+
+    athlete_choices = list(Athlete.objects.filter(team__pk=team_pk, active=True))
+    entries_by_event_by_order = MeetEntriesManager.read_entries_by_event_by_order(
+        meet_pk, team_pk
+    )
+    sections = MeetEntriesManager.build_event_sections(
+        request, EVENT_ORDER, entries_by_event_by_order, athlete_choices
+    )
+
+    for section in sections:
+        for form in section["forms"]:
+            for key in form.fields.keys():
+                form.fields[key].disabled = True
+
+    return render(
+        request,
+        "meet-entries.html",
+        {
+            "meet_name": meet.name,
+            "team_name": team.name,
+            "sections": sections,
+            "view_only": True,
+        },
+    )
 
 
 def _validate_request(user: Profile, meet_pk: int, team_pk: int) -> None:

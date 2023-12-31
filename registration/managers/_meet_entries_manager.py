@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, TypedDict
 from django.core.exceptions import ValidationError
 
 from common.constants import INDIVIDUAL_EVENTS, RELAY_EVENTS
+from common.models import Athlete
 from registration.constants import ENTRIES_PER_INDIVIDUAL_EVENT, ENTRIES_PER_RELAY_EVENT
 from registration.forms import MeetIndividualEntryForm, MeetRelayEntryForm
 from registration.models import MeetIndividualEntry, MeetRelayEntry
@@ -15,7 +16,6 @@ if TYPE_CHECKING:
     from django.http import HttpRequest
 
     from common.constants import Event
-    from common.models import Athlete
     from registration.forms import MeetEntryForm
     from registration.models import MeetEntry
 
@@ -27,6 +27,8 @@ class Section(TypedDict):
 
 
 class MeetEntriesManager:
+    INDIVIDUAL_EVENT_ATHLETE_FIELDS = ["athlete"]
+    RELAY_EVENT_ATHLETE_FIELDS = ["athlete_0", "athlete_1", "athlete_2", "athlete_3"]
     INDIVIDUAL_EVENT_FORM_FIELDS = ["athlete", "seed"]
     RELAY_EVENT_FORM_FIELDS = [
         "athlete_0",
@@ -49,7 +51,23 @@ class MeetEntriesManager:
         return entries_by_event_by_order
 
     @staticmethod
-    def build_event_section_for_editing(
+    def build_event_sections(
+        request: HttpRequest,
+        events: list[Event],
+        entries_by_event_by_order: dict[Event, dict[int, MeetEntry]],
+        athlete_choices: list[Athlete],
+    ) -> list[Section]:
+        sections = []
+        for event in events:
+            sections.append(
+                MeetEntriesManager._build_event_section_for_editing(
+                    request, event, entries_by_event_by_order[event], athlete_choices
+                )
+            )
+        return sections
+
+    @staticmethod
+    def _build_event_section_for_editing(
         request: HttpRequest,
         event: Event,
         entries_by_order: dict[int, MeetEntry],
@@ -65,44 +83,7 @@ class MeetEntriesManager:
             )
             for index in range(count)
         ]
-        return {"event": event, "forms": forms, "count": count}
-
-    @staticmethod
-    def update_entries(
-        meet_pk: int,
-        team_pk: int,
-        sections: list[Section],
-        entries_by_event_by_order: dict[Event, dict[int, MeetEntry]],
-    ) -> None:
-        for section in sections:
-            event = section["event"]
-            for index, form in enumerate(section["forms"]):
-                form.full_clean()
-                if not form.is_valid() or MeetEntriesManager._is_form_empty(
-                    event, form
-                ):
-                    entries_by_event_by_order[event].pop(index, None)
-                    continue
-
-                current_entry = entries_by_event_by_order[event].get(index)
-                if current_entry:
-                    MeetEntriesManager._update_entry(event, current_entry, form)
-                    entries_by_event_by_order[event].pop(index)
-                else:
-                    entry = MeetEntriesManager._create_entry(
-                        meet_pk, team_pk, event, index, form
-                    )
-                    try:
-                        entry.full_clean()
-                        entry.save()
-                    except ValidationError as e:
-                        form.add_error(None, e)
-
-        for entry in itertools.chain.from_iterable(
-            entries_by_athlete_pks.values()
-            for entries_by_athlete_pks in entries_by_event_by_order.values()
-        ):
-            entry.delete()
+        return Section(event=event, count=count, forms=forms)
 
     @staticmethod
     def _build_event_entry_form(
@@ -148,6 +129,46 @@ class MeetEntriesManager:
         return form_class(athlete_choices, prefix=prefix, initial=initial)
 
     @staticmethod
+    def update_entries(
+        meet_pk: int,
+        team_pk: int,
+        sections: list[Section],
+        entries_by_event_by_order: dict[Event, dict[int, MeetEntry]],
+    ) -> None:
+        for section in sections:
+            event = section["event"]
+            for index, form in enumerate(section["forms"]):
+                form.full_clean()
+                if not form.is_valid() or MeetEntriesManager._is_form_empty(
+                    event, form
+                ):
+                    entries_by_event_by_order[event].pop(index, None)
+                    continue
+                if MeetEntriesManager._is_missing_athletes(event, form):
+                    entries_by_event_by_order[event].pop(index, None)
+                    continue
+
+                current_entry = entries_by_event_by_order[event].get(index)
+                if current_entry:
+                    MeetEntriesManager._update_entry(event, current_entry, form)
+                    entries_by_event_by_order[event].pop(index)
+                else:
+                    entry = MeetEntriesManager._create_entry(
+                        meet_pk, team_pk, event, index, form
+                    )
+                    try:
+                        entry.full_clean()
+                        entry.save()
+                    except ValidationError as e:
+                        form.add_error(None, e)
+
+        for entry in itertools.chain.from_iterable(
+            entries_by_athlete_pks.values()
+            for entries_by_athlete_pks in entries_by_event_by_order.values()
+        ):
+            entry.delete()
+
+    @staticmethod
     def _is_form_empty(event: Event, form: MeetEntryForm) -> bool:
         if event in INDIVIDUAL_EVENTS:
             fields = MeetEntriesManager.INDIVIDUAL_EVENT_FORM_FIELDS
@@ -155,6 +176,22 @@ class MeetEntriesManager:
             fields = MeetEntriesManager.RELAY_EVENT_FORM_FIELDS
 
         return all(form.cleaned_data[field] is None for field in fields)
+
+    @staticmethod
+    def _is_missing_athletes(event: Event, form: MeetEntryForm) -> bool:
+        if event in INDIVIDUAL_EVENTS:
+            fields = MeetEntriesManager.INDIVIDUAL_EVENT_ATHLETE_FIELDS
+        elif event in RELAY_EVENTS:
+            fields = MeetEntriesManager.RELAY_EVENT_ATHLETE_FIELDS
+
+        missing_athlete = False
+        for field in fields:
+            value = form.cleaned_data[field]
+            if value is None:
+                missing_athlete = True
+                form.add_error(field, "Missing athlete")
+
+        return missing_athlete
 
     @staticmethod
     def _update_entry(event: Event, entry: MeetEntry, form: MeetEntryForm) -> None:
@@ -178,18 +215,29 @@ class MeetEntriesManager:
                 team_id=team_pk,
                 event=event,
                 order=index,
-                athlete_id=form.cleaned_data["athlete"],
+                athlete=Athlete.objects.filter(id=form.cleaned_data["athlete"]).get(),
                 seed=form.cleaned_data["seed"],
             )
         elif event in RELAY_EVENTS:
+            athletes_by_pk = {
+                athlete.id: athlete
+                for athlete in Athlete.objects.filter(
+                    id__in=[
+                        form.cleaned_data["athlete_0"],
+                        form.cleaned_data["athlete_1"],
+                        form.cleaned_data["athlete_2"],
+                        form.cleaned_data["athlete_3"],
+                    ]
+                )
+            }
             return MeetRelayEntry(
                 meet_id=meet_pk,
                 team_id=team_pk,
                 event=event,
                 order=index,
-                athlete_0_id=form.cleaned_data["athlete_0"],
-                athlete_1_id=form.cleaned_data["athlete_1"],
-                athlete_2_id=form.cleaned_data["athlete_2"],
-                athlete_3_id=form.cleaned_data["athlete_3"],
+                athlete_0=athletes_by_pk[form.cleaned_data["athlete_0"]],
+                athlete_1=athletes_by_pk[form.cleaned_data["athlete_1"]],
+                athlete_2=athletes_by_pk[form.cleaned_data["athlete_2"]],
+                athlete_3=athletes_by_pk[form.cleaned_data["athlete_3"]],
                 seed=form.cleaned_data["seed"],
             )

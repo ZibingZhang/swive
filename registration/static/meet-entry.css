@@ -24,3 +24,8 @@ input.is-valid {
 .errorlist {
     color: var(--bs-form-invalid-color) !important;
 }
+
+.form-control:disabled, .form-select:disabled {
+  background-color: unset;
+  background-image: unset;
+}
