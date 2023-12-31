@@ -56,7 +56,7 @@ def teams_for_meet(request: HttpRequest, meet_id: int) -> HttpResponse:
 
 def all_teams(request: HttpRequest) -> HttpResponse:
     columns = [Column.NAME, Column.REGISTERED_MEETS]
-    renderer = PaginatedSearchRenderer(request, Team, TeamAdmin, "All Meets", columns)
+    renderer = PaginatedSearchRenderer(request, Team, TeamAdmin, "All Teams", columns)
     return renderer.render()
 
 

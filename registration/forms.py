@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 from django import forms
 from django.contrib.auth.models import Permission
 
+from common import utils
 from common.forms import BaseForm, BaseModelForm
-from common.utils import is_seed
 from registration.models import CoachEntry
 
 if TYPE_CHECKING:
@@ -43,6 +43,9 @@ class MeetEntryForm(BaseForm):
     seed = forms.CharField(max_length=10, required=False, empty_value=None)
 
     def __init__(self, *args, **kwargs) -> None:
+        initial = kwargs.get("initial")
+        if initial and initial.get("seed"):
+            initial["seed"] = utils.format_seed(initial["seed"])
         super().__init__(*args, **kwargs)
 
     @property
@@ -59,8 +62,9 @@ class MeetEntryForm(BaseForm):
         for field in self.athlete_fields:
             if self.cleaned_data[field.name] is None:
                 self.add_error(field.name, "Missing athlete")
-        if not is_seed(self.cleaned_data["seed"]):
+        if not utils.is_seed(self.cleaned_data["seed"]):
             self.add_error("seed", "Seed not formatted properly")
+        self.cleaned_data["seed"] = utils.seed_to_decimal(self.cleaned_data["seed"])
 
 
 class MeetIndividualEntryForm(MeetEntryForm):

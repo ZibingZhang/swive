@@ -50,3 +50,11 @@ def seed_to_decimal(seed: str) -> Decimal:
     seconds, milliseconds = seconds.split(".")
     seconds = str(60 * int(minutes) + int(seconds))
     return Decimal(f"{seconds}.{milliseconds}")
+
+
+def format_seed(seed: Decimal) -> str:
+    if seed >= 60:
+        minutes = seed // 60
+        seconds = seed - 60 * minutes
+        return f"{minutes}:{seconds}"
+    return str(seed)

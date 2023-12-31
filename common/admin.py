@@ -33,7 +33,7 @@ class TeamAdmin(BaseAdmin):
 
 @admin.register(Meet)
 class MeetAdmin(BaseAdmin):
-    list_display = ("name", "start_date", "end_date")
+    list_display = ("name", "start_date", "end_date", "entries_open")
     list_filter = ("start_date", "end_date")
     search_fields = ("name", "start_date", "end_date")
 

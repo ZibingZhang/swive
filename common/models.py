@@ -65,7 +65,7 @@ class Meet(SoftDeleteModel):
                 check=Q(start_date__lte=F("end_date")),
             )
         ]
-        ordering = ("name",)
+        ordering = ("start_date", "end_date", "name")
 
     def __str__(self) -> str:
         return f"{self.name}"
