@@ -28,7 +28,7 @@ class TeamAdmin(BaseAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return qs.filter(coachentry__profile=request.user)
+        return request.user.teams.all()
 
 
 @admin.register(Meet)
