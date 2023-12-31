@@ -59,8 +59,9 @@ class PaginatedSearchRenderer:
         if not self.search_term:
             return model_type.objects.all()
         model_admin = admin_type(model_type, admin.site)
-        qs = model_admin.get_queryset(self.request)
-        objects, _ = model_admin.get_search_results(self.request, qs, self.search_term)
+        objects, _ = model_admin.get_search_results(
+            self.request, model_type.objects, self.search_term
+        )
         return objects
 
     def _get_model_page(self) -> WrappedPage[M]:
