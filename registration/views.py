@@ -12,7 +12,7 @@ from django.views.decorators.http import require_http_methods
 
 from common.constants import EVENT_ORDER, INDIVIDUAL_EVENTS, RELAY_EVENTS
 from common.models import Meet, Team
-from registration.constants import ENTRIES_PER_EVENT
+from registration.constants import ENTRIES_PER_INDIVIDUAL_EVENT, ENTRIES_PER_RELAY_EVENT
 from registration.forms import (
     MeetEntryForm,
     MeetIndividualEntryForm,
@@ -101,13 +101,17 @@ def _build_event_section(
     entries_by_order: dict[int, MeetEntry],
     athlete_choices: list[Athlete],
 ) -> Section:
+    if event in INDIVIDUAL_EVENTS:
+        count = ENTRIES_PER_INDIVIDUAL_EVENT
+    elif event in RELAY_EVENTS:
+        count = ENTRIES_PER_RELAY_EVENT
     forms = [
         _build_event_entry_form(
             request, event, entries_by_order, athlete_choices, index
         )
-        for index in range(ENTRIES_PER_EVENT)
+        for index in range(count)
     ]
-    return {"event": event, "forms": forms, "count": ENTRIES_PER_EVENT}
+    return {"event": event, "forms": forms, "count": count}
 
 
 def _build_event_entry_form(
