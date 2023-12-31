@@ -9,7 +9,7 @@ from import_export.admin import ImportExportModelAdmin
 
 from common import utils
 from common.forms import AthleteAdminForm, CoachForm
-from common.models import Athlete, Meet, Team, Coach, MeetTeam
+from common.models import Athlete, Coach, Meet, MeetTeam, Team
 
 if TYPE_CHECKING:
     from django.http import HttpRequest

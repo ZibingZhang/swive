@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import Q
 
 from account.models import Profile
-from common.models import Athlete, EventChoice, Meet, SoftDeleteModel, Team, BaseModel
+from common.models import Athlete, BaseModel, EventChoice, Meet, SoftDeleteModel, Team
 
 
 class MeetEntry(SoftDeleteModel):

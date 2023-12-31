@@ -71,16 +71,8 @@ class Meet(SoftDeleteModel):
 
 class Team(SoftDeleteModel):
     name = models.CharField(max_length=50, unique=True)
-    coaches = models.ManyToManyField(
-        Profile,
-        through="Coach",
-        related_name="teams"
-    )
-    meets = models.ManyToManyField(
-        Meet,
-        through="MeetTeam",
-        related_name="teams"
-    )
+    coaches = models.ManyToManyField(Profile, through="Coach", related_name="teams")
+    meets = models.ManyToManyField(Meet, through="MeetTeam", related_name="teams")
 
     class Meta:
         ordering = ("name",)

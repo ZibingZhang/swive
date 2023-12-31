@@ -1,8 +1,7 @@
 from django.contrib.auth.models import Permission
 from django.forms import Form, ModelForm
 
-from common.models import Athlete, Team
-from common.models import Coach
+from common.models import Athlete, Coach, Team
 
 
 class BaseForm(Form):

@@ -2,10 +2,7 @@ from django.contrib import admin
 
 from common import utils
 from common.admin import BaseAdmin
-from registration.models import (
-    MeetIndividualEntry,
-    MeetRelayEntry,
-)
+from registration.models import MeetIndividualEntry, MeetRelayEntry
 
 
 @admin.register(MeetIndividualEntry)
