@@ -13,4 +13,14 @@ urlpatterns = [
         views.view_meet_entries,
         name="view meet entries",
     ),
+    path(
+        "teams/join",
+        views.team_coach_status,
+        name="team coach status",
+    ),
+    path(
+        "teams/join/requests",
+        views.coach_requests,
+        name="coach requests",
+    ),
 ]

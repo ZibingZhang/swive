@@ -20,8 +20,8 @@ def create_profile(request) -> HttpResponse:
     elif request.method == "POST":
         form = ProfileCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
+            current_user = form.save()
+            login(request, current_user)
             return redirect("home")
     return render(request, "create.html", {"form": form})
 

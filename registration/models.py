@@ -90,9 +90,11 @@ class MeetRelayEntry(MeetEntry):
         )
 
 
-class CoachEntryRequest(BaseModel):
+class CoachRequest(BaseModel):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, related_name="coach_requests"
+    )
 
     class Meta:
         verbose_name = "Coach Request"

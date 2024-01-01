@@ -132,6 +132,11 @@ class TableColumn:
             self.header, field=self.field, builder=self.builder, context=context
         )
 
+    def with_header(self, header: str) -> TableColumn:
+        return TableColumn(
+            header, field=self.field, builder=self.builder, context=self.context
+        )
+
     def value_of(self, obj: BaseModel) -> str:
         if self.field:
             return str(getattr(obj, self.field))

@@ -4,17 +4,18 @@ import itertools
 from collections import defaultdict
 from typing import TYPE_CHECKING, TypedDict
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 
 from common.constants import INDIVIDUAL_EVENTS, RELAY_EVENTS
-from common.models import Athlete
+from common.models import Athlete, Meet, Team, MeetTeam
 from registration.constants import ENTRIES_PER_INDIVIDUAL_EVENT, ENTRIES_PER_RELAY_EVENT
 from registration.forms import MeetIndividualEntryForm, MeetRelayEntryForm
 from registration.models import MeetIndividualEntry, MeetRelayEntry
 
 if TYPE_CHECKING:
-    from django.http import HttpRequest
+    from django.http import HttpRequest, Http404
 
+    from account.models import Profile
     from common.constants import Event
     from registration.forms import MeetEntryForm
     from registration.models import MeetEntry
@@ -37,6 +38,20 @@ class MeetEntriesManager:
         "athlete_3",
         "seed",
     ]
+
+    @staticmethod
+    def validate_request(user: Profile, meet_id: int, team_id: int) -> None:
+        if not Meet.objects.filter(id=meet_id).exists():
+            raise Http404("Meet not found")
+        if not Team.objects.filter(id=team_id).exists():
+            raise Http404("Team not found")
+        if not MeetTeam.objects.filter(meet__id=meet_id, team__id=team_id).exists():
+            raise Http404("Team not registered to meet")
+
+        if user.is_superuser:
+            return
+        if team_id not in user.teams.all().values_list("id", flat=True):
+            raise PermissionDenied("User is not registered to the team")
 
     @staticmethod
     def read_entries_by_event_by_order(

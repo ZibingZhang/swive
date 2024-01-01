@@ -9,7 +9,7 @@
       </button>
       <div class="collapse" id="meets-collapse">
         <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-          <li><a href="/meets/all" class="link-dark rounded w-75">View All</a></li>
+          <li><a href="/meets/all" class="link-dark rounded w-75">View All Meets</a></li>
         </ul>
       </div>
     </li>
@@ -19,17 +19,20 @@
       </button>
       <div class="collapse" id="teams-collapse">
         <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-          <li><a href="/teams/all" class="link-dark rounded w-75">View All</a></li>
-          {% if user.is_coach %}
-            <li><a href="/teams/mine" class="link-dark rounded w-75">My Teams</a></li>
+          <li><a href="/teams/all" class="link-dark rounded w-75">View All Teams</a></li>
+          {% if user.is_coach or user.is_superuser %}
+            <li><a href="/teams/mine" class="link-dark rounded w-75">View My Teams</a></li>
           {% endif %}
           {% if user.is_authenticated %}
-            <li><a href="/teams/join" class="link-dark rounded w-75">Join a Team</a></li>
+            <li><a href="/registration/teams/join" class="link-dark rounded w-75">Join a Team</a></li>
+          {% endif %}
+          {% if user.is_official or user.is_coach or user.is_superuser %}
+            <li><a href="/registration/teams/join/requests" class="link-dark rounded w-75">Coach Requests</a></li>
           {% endif %}
         </ul>
       </div>
     </li>
-    {% if user.is_coach %}
+    {% if user.is_coach or user.is_superuser %}
       <li class="mb-1">
         <button class="btn btn-toggle align-items-center rounded collapsed w-100" data-bs-toggle="collapse" data-bs-target="#athletes-collapse" aria-expanded="false">
           Athletes
@@ -47,8 +50,8 @@
         </button>
         <div class="collapse" id="account-collapse">
           <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-            <li><a href="/account/edit" class="link-dark rounded w-75">Edit Account</a></li>
-            {% if user.is_staff %}
+            <li><a href="/account/edit" class="link-dark rounded w-75">Account Settings</a></li>
+            {% if user.is_staff or user.is_superuser %}
               <li><a href="/admin" class="link-dark rounded" target="_blank">Admin Site</a></li>
             {% endif %}
           </ul>

@@ -3,26 +3,28 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
-from django.http import Http404
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from common.admin import TeamAdmin
+from common.tables.paginator import PaginatedSearchRenderer
 from common.constants import EVENT_ORDER
-from common.models import Meet, MeetTeam, Team
+from common.models import Meet, Team, Coach
+from common.tables.columns import Column
+from registration.admin import CoachRequestAdmin
 from registration.managers import MeetEntriesManager
-from registration.models import Athlete
+from registration.models import Athlete, CoachRequest
+from django.http import Http404
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse
-
-    from account.models import Profile
 
 
 @login_required
 @require_http_methods(["GET", "POST"])
 def edit_meet_entries(request: HttpRequest, meet_id: int, team_id: int) -> HttpResponse:
-    _validate_request(request.user, meet_id, team_id)
+    MeetEntriesManager.validate_request(request.user, meet_id, team_id)
 
     meet = Meet.objects.filter(id=meet_id).get()
     team = Team.objects.filter(id=team_id).get()
@@ -62,7 +64,7 @@ def edit_meet_entries(request: HttpRequest, meet_id: int, team_id: int) -> HttpR
 @login_required
 @require_http_methods(["GET"])
 def view_meet_entries(request: HttpRequest, meet_id: int, team_id: int) -> HttpResponse:
-    _validate_request(request.user, meet_id, team_id)
+    MeetEntriesManager.validate_request(request.user, meet_id, team_id)
 
     meet = Meet.objects.filter(id=meet_id).get()
     team = Team.objects.filter(id=team_id).get()
@@ -92,15 +94,53 @@ def view_meet_entries(request: HttpRequest, meet_id: int, team_id: int) -> HttpR
     )
 
 
-def _validate_request(user: Profile, meet_id: int, team_id: int) -> None:
-    if not Meet.objects.filter(id=meet_id).exists():
-        raise Http404("Meet not found")
-    if not Team.objects.filter(id=team_id).exists():
-        raise Http404("Team not found")
-    if not MeetTeam.objects.filter(meet__id=meet_id, team__id=team_id).exists():
-        raise Http404("Team not registered to meet")
+@login_required
+@require_http_methods(["GET", "POST"])
+def team_coach_status(request: HttpRequest) -> HttpResponse:
+    if request.method == "POST":
+        qs = CoachRequest.objects.filter(
+            profile=request.user, team_id=request.POST["team_id"]
+        )
+        if qs.exists():
+            qs.delete()
+        else:
+            CoachRequest.objects.create(
+                profile=request.user, team_id=request.POST["team_id"]
+            )
+        return redirect(reverse("team coach status") + "?" + request.GET.urlencode())
 
-    if user.is_superuser:
-        return
-    if team_id not in user.teams.all().values_list("id", flat=True):
-        raise PermissionDenied("User is not registered to the team")
+    columns = [
+        Column.NAME,
+        Column.TEAM_COACH_STATUS.with_context({"request": request}),
+    ]
+
+    renderer = PaginatedSearchRenderer(request, Team, TeamAdmin, "Join a Team", columns)
+    return renderer.render()
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def coach_requests(request: HttpRequest) -> HttpResponse:
+    if request.method == "POST":
+        team_id = int(request.POST["team_id"])
+        profile_id = int(request.POST["profile_id"])
+        approve = request.POST["approve"] == "True"
+        qs = CoachRequest.objects.filter(team_id=team_id, profile_id=profile_id)
+        if not qs.exists():
+            raise Http404("Coach request not found")
+        if Coach.objects.filter(team_id=team_id, profile_id=profile_id).exists():
+            return redirect("coach requests")
+        if approve:
+            Coach.objects.create(team_id=team_id, profile_id=profile_id)
+        qs.get().delete()
+        return redirect("coach requests")
+
+    columns = [
+        Column.TEAM,
+        Column.PROFILE,
+        Column.PROCESS_COACH_REQUEST.with_header("Approve").with_context({"request": request, "approve": True}),
+        Column.PROCESS_COACH_REQUEST.with_header("Deny").with_context({"request": request, "approve": False}),
+    ]
+
+    renderer = PaginatedSearchRenderer(request, CoachRequest, CoachRequestAdmin, "Coach Requests", columns)
+    return renderer.render()

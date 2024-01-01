@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from common import utils
 from common.admin import BaseAdmin
-from registration.models import MeetIndividualEntry, MeetRelayEntry
+from registration.models import CoachRequest, MeetIndividualEntry, MeetRelayEntry
 
 
 @admin.register(MeetIndividualEntry)
@@ -73,3 +73,8 @@ class MeetRelayEntryAdmin(BaseAdmin):
         "athlete_3__last_name",
         "seed",
     )
+
+
+@admin.register(CoachRequest)
+class CoachRequestAdmin(BaseAdmin):
+    pass

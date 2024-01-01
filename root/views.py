@@ -6,8 +6,8 @@ from django.contrib.auth.decorators import login_required
 
 from common.admin import MeetAdmin, TeamAdmin
 from common.models import Meet, MeetTeam, SoftDeleteModel, Team
-from common.paginator import PaginatedSearchRenderer
-from root.columns import Column
+from common.tables.columns import Column
+from common.tables.paginator import PaginatedSearchRenderer
 
 if TYPE_CHECKING:
     from django.http import Http404, HttpRequest, HttpResponse
