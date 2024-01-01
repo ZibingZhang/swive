@@ -4,40 +4,50 @@
   </a>
   <ul class="list-unstyled ps-0 mb-auto">
      <li class="mb-1">
-      <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#meets-collapse" aria-expanded="false">
+      <button class="btn btn-toggle align-items-center rounded collapsed w-100" data-bs-toggle="collapse" data-bs-target="#meets-collapse" aria-expanded="false">
         Meets
       </button>
       <div class="collapse" id="meets-collapse">
         <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-          <li><a href="/meets/all" class="link-dark rounded">View All</a></li>
+          <li><a href="/meets/all" class="link-dark rounded w-75">View All</a></li>
         </ul>
       </div>
     </li>
     <li class="mb-1">
-      <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#teams-collapse" aria-expanded="false">
+      <button class="btn btn-toggle align-items-center rounded collapsed w-100" data-bs-toggle="collapse" data-bs-target="#teams-collapse" aria-expanded="false">
         Teams
       </button>
       <div class="collapse" id="teams-collapse">
         <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-          <li><a href="/teams/all" class="link-dark rounded">View All</a></li>
+          <li><a href="/teams/all" class="link-dark rounded w-75">View All</a></li>
           {% if user.is_coach %}
-            <li><a href="/teams/mine" class="link-dark rounded">My Teams</a></li>
+            <li><a href="/teams/mine" class="link-dark rounded w-75">My Teams</a></li>
           {% endif %}
           {% if user.is_authenticated %}
-            <li><a href="/teams/join" class="link-dark rounded">Join a Team</a></li>
+            <li><a href="/teams/join" class="link-dark rounded w-75">Join a Team</a></li>
           {% endif %}
         </ul>
       </div>
     </li>
-    {% if user.is_authenticated %}
+    {% if user.is_coach %}
+      <li class="mb-1">
+        <button class="btn btn-toggle align-items-center rounded collapsed w-100" data-bs-toggle="collapse" data-bs-target="#athletes-collapse" aria-expanded="false">
+          Athletes
+        </button>
+        <div class="collapse" id="athletes-collapse">
+          <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+            <li><a href="/admin/common/athlete" target="_blank" class="link-dark rounded w-75">Add / Edit Athletes</a></li>
+          </ul>
+        </div>
+      </li>
       <li class="border-top my-3"></li>
       <li class="mb-1">
-        <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#account-collapse" aria-expanded="false">
+        <button class="btn btn-toggle align-items-center rounded collapsed w-100" data-bs-toggle="collapse" data-bs-target="#account-collapse" aria-expanded="false">
           Account
         </button>
         <div class="collapse" id="account-collapse">
           <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-            <li><a href="/account/edit" class="link-dark rounded">Edit Account</a></li>
+            <li><a href="/account/edit" class="link-dark rounded w-75">Edit Account</a></li>
             {% if user.is_staff %}
               <li><a href="/admin" class="link-dark rounded" target="_blank">Admin Site</a></li>
             {% endif %}

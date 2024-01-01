@@ -1,7 +1,8 @@
 from django.contrib.auth.models import Permission
+from django.core.exceptions import ValidationError
 from django.forms import Form, ModelForm
 
-from common.models import Athlete, Coach, Team
+from common.models import Athlete, Coach
 
 
 class BaseForm(Form):
@@ -23,10 +24,13 @@ class AthleteAdminForm(BaseModelForm):
         super().__init__(*args, **kwargs)
         if self.current_user.is_superuser:
             return
-        team_ids = Coach.objects.filter(profile=self.current_user).values_list(
-            "team_id", flat=True
-        )
-        self.fields["team"].queryset = Team.objects.filter(id__in=team_ids)
+        self.fields["team"].queryset = self.current_user.teams.all()
+
+    def clean(self) -> None:
+        if not self.current_user.is_superuser and self.cleaned_data[
+            "team"
+        ] not in self.current_user.teams.all().values_list("id", flat=True):
+            raise ValidationError("Permission denied")
 
 
 class CoachForm(BaseModelForm):

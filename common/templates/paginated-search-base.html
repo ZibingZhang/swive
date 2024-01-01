@@ -15,7 +15,7 @@
     </form>
   </div>
   {% block table %}
-    <table class="table table-bordered">
+    <table class="table table-bordered table-hover table-sm">
       <thead class="text-center">
         <tr>
           {% for column_header in page.column_headers %}
@@ -27,7 +27,7 @@
         {% for object in page %}
           <tr class="align-middle">
             {% for value in object %}
-              <td>{{ value | safe }}</td>
+              <td class="px-md-1 px-lg-3">{{ value | safe }}</td>
             {% endfor %}
           </tr>
         {% endfor %}

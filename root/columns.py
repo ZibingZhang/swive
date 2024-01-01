@@ -21,7 +21,7 @@ def _registered_teams_builder(meet: Meet) -> str:
     return f"""
         <div class="position-relative text-center">
             <a href="/meet/{ meet.id }/teams" class="btn btn-secondary link-light stretched-link text-decoration-none">
-                View Registered Teams
+                View Registered Teams ({meet.teams.all().count()})
             </a>
         </div"""
 

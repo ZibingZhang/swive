@@ -101,11 +101,13 @@ class MeetEntriesManager:
             form_class = MeetRelayEntryForm
 
         if request.method == "POST":
-            return form_class(athlete_choices, request.POST, prefix=prefix)
+            return form_class(athlete_choices, request.POST, prefix=prefix, event=event)
 
         initial = {"order": index}
         if index not in entries_by_order:
-            return form_class(athlete_choices, prefix=prefix, initial=initial)
+            return form_class(
+                athlete_choices, prefix=prefix, initial=initial, event=event
+            )
 
         entry = entries_by_order[index]
         if event in INDIVIDUAL_EVENTS:
@@ -126,7 +128,7 @@ class MeetEntriesManager:
                 }
             )
 
-        return form_class(athlete_choices, prefix=prefix, initial=initial)
+        return form_class(athlete_choices, prefix=prefix, initial=initial, event=event)
 
     @staticmethod
     def update_entries(

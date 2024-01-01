@@ -9,7 +9,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
 from common.constants import EVENT_ORDER
-from common.models import Coach, Meet, MeetTeam, Team
+from common.models import Meet, MeetTeam, Team
 from registration.managers import MeetEntriesManager
 from registration.models import Athlete
 
@@ -102,6 +102,5 @@ def _validate_request(user: Profile, meet_id: int, team_id: int) -> None:
 
     if user.is_superuser:
         return
-    team_ids = Coach.objects.filter(profile=user).values_list("team__id", flat=True)
-    if team_id not in team_ids:
+    if team_id not in user.teams.all().values_list("id", flat=True):
         raise PermissionDenied("User is not registered to the team")

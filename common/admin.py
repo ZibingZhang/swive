@@ -42,7 +42,9 @@ class MeetAdmin(BaseAdmin):
         if request.user.is_superuser:
             return qs
         teams = request.user.teams.all()
-        meet_ids = MeetTeam.objects.filter(team__in=teams).values_list("meet", flat=True)
+        meet_ids = MeetTeam.objects.filter(team__in=teams).values_list(
+            "meet", flat=True
+        )
         return Meet.objects.filter(id__in=meet_ids)
 
 

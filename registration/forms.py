@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from django import forms
 
 from common import utils
+from common.constants import SWIM_EVENTS, Event
 from common.forms import BaseForm
 
 if TYPE_CHECKING:
@@ -15,9 +16,9 @@ class MeetEntryForm(BaseForm):
     order = forms.IntegerField(min_value=0, widget=forms.HiddenInput())
     seed = forms.CharField(max_length=10, required=False, empty_value=None)
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, event: Event, *args, **kwargs) -> None:
         initial = kwargs.get("initial")
-        if initial and initial.get("seed"):
+        if initial and initial.get("seed") and event in SWIM_EVENTS:
             initial["seed"] = utils.format_seed(initial["seed"])
         super().__init__(*args, **kwargs)
 
