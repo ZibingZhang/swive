@@ -10,6 +10,9 @@
       <div class="collapse" id="meets-collapse">
         <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
           <li><a href="/meets/all" class="link-dark rounded w-75">View All Meets</a></li>
+          {% if user.is_coach or user.is_superuser %}
+            <li><a href="/meets/mine" class="link-dark rounded w-75">View My Meets</a></li>
+          {% endif %}
         </ul>
       </div>
     </li>

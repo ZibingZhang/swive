@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -96,11 +97,22 @@ class Athlete(SoftDeleteModel):
     class Meta:
         ordering = ("team", "first_name", "last_name")
 
+    @property
+    def name(self) -> str:
+        return f"{self.first_name} {self.last_name}"
+
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name} ({self.id})"
 
 
 class Coach(SoftDeleteModel):
+    COACH_PERMISSIONS = {
+        "add_athlete",
+        "change_athlete",
+        "delete_athlete",
+        "view_athlete",
+    }
+
     team = models.ForeignKey(Team, on_delete=models.RESTRICT)
     profile = models.ForeignKey(Profile, on_delete=models.RESTRICT)
 
@@ -110,6 +122,16 @@ class Coach(SoftDeleteModel):
     def __str__(self) -> str:
         return f"{self.team} - {self.profile}"
 
+    def save(self, *args, **kwargs) -> None:
+        self.profile.is_coach = True
+        self.profile.is_staff = True
+        permission_ids = Permission.objects.filter(
+            codename__in=Coach.COACH_PERMISSIONS
+        ).values_list("id", flat=True)
+        self.profile.user_permissions.add(*permission_ids)
+        self.profile.save()
+        return super().save(*args, **kwargs)
+
 
 class MeetTeam(SoftDeleteModel):
     meet = models.ForeignKey(Meet, on_delete=models.RESTRICT)
@@ -118,6 +140,7 @@ class MeetTeam(SoftDeleteModel):
     class Meta:
         verbose_name = "Meet Team Entry"
         verbose_name_plural = "Meet Team Entries"
+        ordering = ("meet", "team")
         constraints = [
             models.UniqueConstraint(
                 fields=["meet", "team"],

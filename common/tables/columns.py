@@ -7,8 +7,8 @@ from django.middleware import csrf
 from common.tables.paginator import TableColumn
 
 if TYPE_CHECKING:
-    from registration.models import CoachRequest
     from common.models import Meet, Team
+    from registration.models import CoachRequest
 
 
 def _process_coach_request_builder(coach_request: CoachRequest, context: dict) -> str:
@@ -81,6 +81,7 @@ def _team_coach_status_builder(team: Team, context: dict) -> str:
 class Column:
     END_DATE = TableColumn("End Date", field="end_date")
     ENTRIES = TableColumn("Entries", builder=_entries_builder)
+    MEET = TableColumn("Meet", field="meet")
     NAME = TableColumn("Name", field="name")
     PROCESS_COACH_REQUEST = TableColumn("", builder=_process_coach_request_builder)
     PROFILE = TableColumn("Profile", field="profile")

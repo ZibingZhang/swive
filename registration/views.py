@@ -3,19 +3,19 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from common.admin import TeamAdmin
-from common.tables.paginator import PaginatedSearchRenderer
 from common.constants import EVENT_ORDER
-from common.models import Meet, Team, Coach
+from common.models import Coach, Meet, Team
 from common.tables.columns import Column
+from common.tables.paginator import PaginatedSearchRenderer
 from registration.admin import CoachRequestAdmin
 from registration.managers import MeetEntriesManager
 from registration.models import Athlete, CoachRequest
-from django.http import Http404
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse
@@ -138,9 +138,18 @@ def coach_requests(request: HttpRequest) -> HttpResponse:
     columns = [
         Column.TEAM,
         Column.PROFILE,
-        Column.PROCESS_COACH_REQUEST.with_header("Approve").with_context({"request": request, "approve": True}),
-        Column.PROCESS_COACH_REQUEST.with_header("Deny").with_context({"request": request, "approve": False}),
+        Column.PROCESS_COACH_REQUEST.with_header("Approve").with_context(
+            {"request": request, "approve": True}
+        ),
+        Column.PROCESS_COACH_REQUEST.with_header("Deny").with_context(
+            {"request": request, "approve": False}
+        ),
     ]
+    renderer = PaginatedSearchRenderer(
+        request, CoachRequest, CoachRequestAdmin, "Coach Requests", columns
+    )
 
-    renderer = PaginatedSearchRenderer(request, CoachRequest, CoachRequestAdmin, "Coach Requests", columns)
+    if not request.user.is_superuser:
+        renderer.objects = renderer.objects.filter(team__in=request.user.teams.all())
+
     return renderer.render()

@@ -4,16 +4,16 @@ import itertools
 from collections import defaultdict
 from typing import TYPE_CHECKING, TypedDict
 
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 
 from common.constants import INDIVIDUAL_EVENTS, RELAY_EVENTS
-from common.models import Athlete, Meet, Team, MeetTeam
+from common.models import Athlete, Meet, MeetTeam, Team
 from registration.constants import ENTRIES_PER_INDIVIDUAL_EVENT, ENTRIES_PER_RELAY_EVENT
 from registration.forms import MeetIndividualEntryForm, MeetRelayEntryForm
 from registration.models import MeetIndividualEntry, MeetRelayEntry
 
 if TYPE_CHECKING:
-    from django.http import HttpRequest, Http404
+    from django.http import Http404, HttpRequest
 
     from account.models import Profile
     from common.constants import Event

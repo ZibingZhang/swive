@@ -1,8 +1,9 @@
-from django.contrib.auth.models import Permission
+from __future__ import annotations
+
 from django.core.exceptions import ValidationError
 from django.forms import Form, ModelForm
 
-from common.models import Athlete, Coach
+from common.models import Athlete
 
 
 class BaseForm(Form):
@@ -31,28 +32,3 @@ class AthleteAdminForm(BaseModelForm):
             "team"
         ] not in self.current_user.teams.all().values_list("id", flat=True):
             raise ValidationError("Permission denied")
-
-
-class CoachForm(BaseModelForm):
-    COACH_PERMISSIONS = {
-        "add_athlete",
-        "change_athlete",
-        "delete_athlete",
-        "view_athlete",
-    }
-
-    class Meta:
-        model = Coach
-        fields = "__all__"
-
-    def save(self, *args, **kwargs) -> Coach:
-        # TODO: validate permissions
-        profile = self.cleaned_data["profile"]
-        profile.is_coach = True
-        profile.is_staff = True
-        permission_ids = Permission.objects.filter(
-            codename__in=CoachForm.COACH_PERMISSIONS
-        ).values_list("id", flat=True)
-        profile.user_permissions.add(*permission_ids)
-        profile.save()
-        return super().save(*args, **kwargs)

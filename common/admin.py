@@ -8,7 +8,7 @@ from django.utils.html import format_html
 from import_export.admin import ImportExportModelAdmin
 
 from common import utils
-from common.forms import AthleteAdminForm, CoachForm
+from common.forms import AthleteAdminForm
 from common.models import Athlete, Coach, Meet, MeetTeam, Team
 
 if TYPE_CHECKING:
@@ -74,7 +74,6 @@ class AthleteAdmin(BaseAdmin):
 
 @admin.register(Coach)
 class CoachAdmin(BaseAdmin):
-    form = CoachForm
     list_display = ("id", utils.linkify_fk("team"), utils.linkify_fk("profile"))
     search_fields = (
         "team__name",

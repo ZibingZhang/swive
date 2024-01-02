@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.contrib import admin
 
 from common import utils
@@ -77,4 +79,10 @@ class MeetRelayEntryAdmin(BaseAdmin):
 
 @admin.register(CoachRequest)
 class CoachRequestAdmin(BaseAdmin):
-    pass
+    search_fields = (
+        "team__name",
+        "profile__first_name",
+        "profile__last_name",
+        "profile__username",
+        "profile__email",
+    )

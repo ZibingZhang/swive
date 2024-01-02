@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, TypeVar
 
 from django.contrib.auth.decorators import login_required
 
-from common.admin import MeetAdmin, TeamAdmin
+from common.admin import MeetAdmin, MeetTeamAdmin, TeamAdmin
 from common.models import Meet, MeetTeam, SoftDeleteModel, Team
 from common.tables.columns import Column
 from common.tables.paginator import PaginatedSearchRenderer
@@ -23,6 +23,26 @@ def all_meets(request: HttpRequest) -> HttpResponse:
         Column.REGISTERED_TEAMS,
     ]
     renderer = PaginatedSearchRenderer(request, Meet, MeetAdmin, "All Meets", columns)
+    return renderer.render()
+
+
+def my_meets(request: HttpRequest) -> HttpResponse:
+    columns = [Column.MEET, Column.TEAM]
+    renderer = PaginatedSearchRenderer(
+        request, MeetTeam, MeetTeamAdmin, "My Meets", columns
+    )
+    renderer.objects = MeetTeam.objects.filter(team__in=request.user.teams.all())
+    renderer.columns.append(
+        Column.ENTRIES.with_context(
+            {
+                "editable_ids": renderer.objects.values_list("id", flat=True),
+                "meet_team_ids_map": {
+                    meet_team.id: (meet_team.meet.id, meet_team.team.id)
+                    for meet_team in renderer.objects
+                },
+            }
+        )
+    )
     return renderer.render()
 
 

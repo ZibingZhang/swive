@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
 from account.models import Profile
