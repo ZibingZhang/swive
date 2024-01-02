@@ -30,4 +30,3 @@ class Command(BaseCommand):
                     username=username, password=password
                 )
                 Coach.objects.create(profile=profile, team=team)
-                exit()
