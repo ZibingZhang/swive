@@ -3,5 +3,48 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-  Home page
+  <div class="row">
+    <div class="col-0 col-md-1 col-lg-3"></div>
+    <div class="col">
+      <h1>Swive Management</h1>
+
+      <p>
+        For use by the MIAA to manage meet entries.
+        {% if not user.is_authenticated %}
+          Use by <a href="{% url 'login' %}">logging in</a> or <a href="{% url 'create profile' %}">creating an account</a>.
+          Coaches should have an account premade for them.
+        {% endif %}
+      </p>
+
+      <p>
+        Use the sidebar to navigate.
+      </p>
+
+      <h2 class="d-none">Additional Resources</h2>
+
+      <h3>MIAA Resources</h3>
+
+      <ul>
+        <li><a href="https://miaa.net/swim-dive-page/" target="_blank">Swimming & Diving Home Page</a></li>
+        <li><a href="https://miaa.net/tournament-alignments/" target="_blank">Tournament Alignments 2023 &ndash; 2025</a></li>
+        <li><a href="https://miaa.net/wp-content/uploads/2023/09/Voluntary-Dive-Weeks-2023-2024.pdf" target="_blank">Voluntary Dive Weeks 2023 &ndash; 2024</a></li>
+        <li><a href="http://miaa.ezstream.com/index.cfm?ChnID=328" target="_blank">Past Season's Championship's Results (EZ-Stream, no longer maintained)</a></li>
+      </ul>
+
+      <h3>NFHS Resources</h3>
+
+      <ul>
+        <li><a href="https://www.nfhs.org/activities-sports/swimming-diving/" target="_blank">Swimming & Diving Home Page</a></li>
+        <li><a href="https://www.nfhs.org/sports-resource-content/swimming-and-diving-rules-changes-2023-24/" target="_blank">Rule Changes 2023 &ndash; 2024</a></li>
+        <li><a href="https://www.nfhs.org/media/1020355/2023-24-one-meter-diving-table-with-video-clips_10-11.pdf" target="_blank">One Meter Diving Table</a></li>
+      </ul>
+
+      <h3>Other Resources</h3>
+
+      <ul>
+        <li><a href="https://www.wiaawi.org/Portals/0/PDF/Sports/SwimmingDiving/dmscoresheet.pdf" target="_blank">Dual Meet Diving Score Sheet Template</a></li>
+      </ul>
+    </div>
+    <div class="col-0 col-md-1 col-lg-3"></div>
+  </div>
 {% endblock %}

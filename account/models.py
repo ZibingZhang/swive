@@ -30,6 +30,8 @@ class Profile(AbstractUser):
         return self.username if self.name == " " else self.name
 
     def __str__(self) -> str:
+        if self.name == " ":
+            return f"({self.username})"
         return f"{self.name} ({self.username})"
 
 

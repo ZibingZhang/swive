@@ -118,6 +118,7 @@ class Coach(SoftDeleteModel):
 
     class Meta:
         verbose_name_plural = "Coaches"
+        ordering = ("team", "profile")
 
     def __str__(self) -> str:
         return f"{self.team} - {self.profile}"
