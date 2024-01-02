@@ -25,7 +25,7 @@ class Command(BaseCommand):
             password = username + "password"
             print(f"{username},{password}")
 
-            if execute:
+            if execute and team.coaches__count == 0:
                 profile = get_user_model().objects.create_user(
                     username=username, password=password
                 )

@@ -33,6 +33,7 @@ db.sqlite3-journal
 
 # Test data
 data/
+*.csv
 
 # Elastic Beanstalk files
 .elasticbeanstalk/*
